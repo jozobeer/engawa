@@ -1,0 +1,246 @@
+// 見た目: テーマ (ライト / ダーク)、アクセント色、背景画像。
+// <head> で読み込み、最初の描画より前に <html> の data-scheme / data-accent を付ける。設定は storage にあって読むのが
+// 非同期なので、前回の値を localStorage に控えておき、パネルを開いたときのちらつきを防ぐ (控えが無ければ OS に従う)。
+// このファイルのトップレベルは他のファイルより先に動くので、トップレベルでは他のファイルの関数や変数に触れない。
+
+const THEMES = [["auto", "themeAuto"], ["light", "themeLight"], ["dark", "themeDark"]];
+// アクセント色。色の値は sidepanel.css の --accent-<id> (ライトとダークで別の値) にだけ書く。先頭が既定
+const ACCENTS = [
+  ["indigo", "accentIndigo"], ["blue", "accentBlue"], ["teal", "accentTeal"], ["purple", "accentPurple"],
+  ["pink", "accentPink"], ["orange", "accentOrange"], ["graphite", "accentGraphite"],
+];
+// 背景画像の寄せ (background-position の値)。3x3 のマスに左上から並べる
+const BG_POSITIONS = [
+  ["left top", "bgPosTopLeft"], ["center top", "bgPosTop"], ["right top", "bgPosTopRight"],
+  ["left center", "bgPosLeft"], ["center center", "bgPosCenter"], ["right center", "bgPosRight"],
+  ["left bottom", "bgPosBottomLeft"], ["center bottom", "bgPosBottom"], ["right bottom", "bgPosBottomRight"],
+];
+const BG_REPEATS = [["no-repeat", "bgRepeatNone"], ["repeat", "bgRepeatBoth"], ["repeat-x", "bgRepeatX"], ["repeat-y", "bgRepeatY"]];
+// 大きさ: 設定の値 → background-size
+const BG_SIZES = [["cover", "bgSizeCover", "cover"], ["width", "bgSizeWidth", "100% auto"], ["auto", "bgSizeAuto", "auto"]];
+
+const BG_KEEP_BYTES = 1.5 * 1024 * 1024; // これ以下の画像はそのまま保存する (GIF のアニメ、SVG、ドット絵を崩さない)
+const BG_MAX_EDGE = 2560;                // 大きい画像は長辺をここまで縮め、WebP にして保存する
+const BG_MAX_BYTES = 3 * 1024 * 1024;    // 縮めてもこれを超える画像は断る (storage.local は 10 MB で、アイコンと共有)
+const APPEARANCE_CACHE_KEY = "appearance";
+const darkQuery = matchMedia("(prefers-color-scheme: dark)");
+
+let shownTheme = "auto";      // いま反映しているテーマ (auto なら OS の切り替えに追従する)
+let shownAccent = ACCENTS[0][0];
+let backdropImage = "";       // 背景画像 (data URL)。storage.local の backgroundImage
+
+const ids = (list) => list.map(([id]) => id);
+const oneOf = (value, list) => (ids(list).includes(value) ? value : list[0][0]);
+
+// 保存された設定から見た目の値を取り出す。壊れた値や古い値は既定に戻す
+function appearanceOf(s) {
+  const tr = Number(s.bgTransparency);
+  return {
+    theme: oneOf(s.theme, THEMES),
+    accent: oneOf(s.accent, ACCENTS),
+    bgTransparency: Number.isFinite(tr) ? Math.min(100, Math.max(0, tr)) : 60,
+    bgPosition: ids(BG_POSITIONS).includes(s.bgPosition) ? s.bgPosition : "center center",
+    bgRepeat: oneOf(s.bgRepeat, BG_REPEATS),
+    bgSize: oneOf(s.bgSize, BG_SIZES),
+  };
+}
+
+function resolvedScheme(theme) {
+  if (theme === "light" || theme === "dark") return theme;
+  return darkQuery.matches ? "dark" : "light";
+}
+
+function applyTheme(theme, accent) {
+  shownTheme = theme;
+  shownAccent = accent;
+  const root = document.documentElement;
+  root.dataset.scheme = resolvedScheme(theme);
+  if (accent === ACCENTS[0][0]) delete root.dataset.accent;
+  else root.dataset.accent = accent;
+}
+
+function cachedAppearance() {
+  try { return appearanceOf(JSON.parse(localStorage.getItem(APPEARANCE_CACHE_KEY) || "{}")); }
+  catch { return appearanceOf({}); } // 控えが壊れている・読めないときは OS に従う
+}
+
+// 設定の見た目をパネルに反映し、次に開いたとき用に控える
+function applyAppearance(s) {
+  const a = appearanceOf(s);
+  applyTheme(a.theme, a.accent);
+  try { localStorage.setItem(APPEARANCE_CACHE_KEY, JSON.stringify({ theme: a.theme, accent: a.accent })); }
+  catch { /* 控えられなくても、次に開いたとき一瞬 OS の配色になるだけ */ }
+  applyBackdrop(a);
+}
+
+function applyBackdrop(a) {
+  const el = document.getElementById("backdrop");
+  if (!el) return;
+  el.hidden = !backdropImage;
+  el.style.backgroundImage = backdropImage ? `url("${backdropImage}")` : "";
+  el.style.opacity = String(1 - a.bgTransparency / 100);
+  el.style.backgroundPosition = a.bgPosition;
+  el.style.backgroundRepeat = a.bgRepeat;
+  el.style.backgroundSize = BG_SIZES.find(([id]) => id === a.bgSize)[2];
+}
+
+async function loadBackdropImage() {
+  const { backgroundImage } = await chrome.storage.local.get("backgroundImage");
+  backdropImage = typeof backgroundImage === "string" ? backgroundImage : "";
+}
+
+function blobDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
+
+// <img> で読めるか確かめる。Chrome が描けない形式 (TIFF・HEIC) や壊れたファイルは、大きさにかかわらずここで断る。
+// createImageBitmap は SVG の Blob を読めないので使わない
+async function decodedImage(src) {
+  const img = new Image();
+  img.src = src;
+  await img.decode().catch(() => { throw new Error("errBgLoadFailed"); });
+  return img;
+}
+
+// 長辺 BG_MAX_EDGE の WebP に縮める
+async function shrunkDataUrl(img) {
+  const { naturalWidth: w, naturalHeight: h } = img;
+  if (!w || !h) throw new Error("errBgLoadFailed"); // 大きさを持たない SVG は縮められない
+  const scale = Math.min(1, BG_MAX_EDGE / Math.max(w, h));
+  const canvas = new OffscreenCanvas(Math.max(1, Math.round(w * scale)), Math.max(1, Math.round(h * scale)));
+  canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+  const blob = await canvas.convertToBlob({ type: "image/webp", quality: 0.85 });
+  if (blob.size > BG_MAX_BYTES) throw new Error("errBgTooLarge");
+  return blobDataUrl(blob);
+}
+
+// 選んだファイルを保存用の data URL にする。失敗の理由は Error の message (翻訳キー) で返す
+async function backgroundDataUrl(file) {
+  if (!file.type.startsWith("image/")) throw new Error("errBgNotImage");
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await decodedImage(url);
+    return await (file.size <= BG_KEEP_BYTES ? blobDataUrl(file) : shrunkDataUrl(img));
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+// ---------- 設定画面の「見た目」 ----------
+// 見た目はその場で反映して保存する (保存ボタンを待たない)。他の項目の未保存の入力には触れない
+let appearanceWrites = Promise.resolve();
+function saveAppearance(patch) {
+  settings = { ...settings, ...patch };
+  applyAppearance(settings);
+  // 書き込みは直列にする (前の書き込みの失敗は次の書き込みを止めない)
+  appearanceWrites = appearanceWrites.catch(() => {}).then(async () => {
+    const { settings: stored } = await chrome.storage.local.get("settings");
+    await chrome.storage.local.set({ settings: { ...DEFAULT_SETTINGS, ...(stored || {}), ...patch } });
+  });
+  return appearanceWrites;
+}
+
+function fillSelect(sel, list) {
+  sel.replaceChildren(...list.map(([value, label]) => Object.assign(document.createElement("option"), { value, textContent: t(label) })));
+}
+
+function radioGroup(container, name, list, className, decorate) {
+  container.replaceChildren(...list.map(([value, label]) => {
+    const input = Object.assign(document.createElement("input"), { type: "radio", name, value, className, title: t(label) });
+    input.setAttribute("aria-label", t(label));
+    decorate?.(input, value);
+    return input;
+  }));
+}
+
+function showBgStatus(key) {
+  const el = $("#bg-status");
+  el.hidden = !key;
+  el.textContent = key ? t(key) : "";
+}
+
+// 設定画面を開いたときと、別のパネルが見た目を変えたときに、入力欄を今の設定に合わせる
+function syncAppearanceControls() {
+  const a = appearanceOf(settings);
+  $("#in-theme").value = a.theme;
+  document.querySelectorAll('input[name="accent"]').forEach((r) => { r.checked = r.value === a.accent; });
+  $("#in-bg-transparency").value = String(a.bgTransparency);
+  $("#out-bg-transparency").value = `${a.bgTransparency}%`;
+  document.querySelectorAll('input[name="bg-position"]').forEach((r) => { r.checked = r.value === a.bgPosition; });
+  $("#in-bg-repeat").value = a.bgRepeat;
+  $("#in-bg-size").value = a.bgSize;
+  $("#bg-options").hidden = !backdropImage;
+  $("#btn-bg-clear").hidden = !backdropImage;
+  $("#bg-thumb").hidden = !backdropImage;
+  $("#bg-thumb").style.backgroundImage = backdropImage ? `url("${backdropImage}")` : "";
+}
+
+// 失敗の理由 → 表示する文言のキー。backgroundDataUrl が投げたキーはそのまま、容量超過 (storage.local の quota) は専用の文言
+function bgErrorKey(err) {
+  const message = String(err?.message || "");
+  if (message.startsWith("errBg")) return message;
+  if (/quota/i.test(message)) return "errBgStorageFull";
+  return "errBgLoadFailed";
+}
+
+async function onBackgroundChosen(e) {
+  const file = e.target.files?.[0];
+  e.target.value = ""; // 同じファイルを選び直しても change が来るように
+  if (!file) return;
+  showBgStatus("");
+  try {
+    const dataUrl = await backgroundDataUrl(file);
+    await chrome.storage.local.set({ backgroundImage: dataUrl });
+    backdropImage = dataUrl;
+  } catch (err) {
+    showBgStatus(bgErrorKey(err));
+    return;
+  }
+  applyAppearance(settings);
+  syncAppearanceControls();
+}
+
+async function clearBackground() {
+  await chrome.storage.local.remove("backgroundImage");
+  backdropImage = "";
+  showBgStatus("");
+  applyAppearance(settings);
+  syncAppearanceControls();
+}
+
+function setupAppearanceSettings() {
+  fillSelect($("#in-theme"), THEMES);
+  fillSelect($("#in-bg-repeat"), BG_REPEATS);
+  fillSelect($("#in-bg-size"), BG_SIZES);
+  radioGroup($("#in-accent"), "accent", ACCENTS, "swatch", (input, id) => input.style.setProperty("--swatch", `var(--accent-${id})`));
+  radioGroup($("#in-bg-position"), "bg-position", BG_POSITIONS, "position-cell");
+
+  $("#in-theme").addEventListener("change", (e) => saveAppearance({ theme: e.target.value }));
+  $("#in-accent").addEventListener("change", (e) => saveAppearance({ accent: e.target.value }));
+  $("#in-bg-position").addEventListener("change", (e) => saveAppearance({ bgPosition: e.target.value }));
+  $("#in-bg-repeat").addEventListener("change", (e) => saveAppearance({ bgRepeat: e.target.value }));
+  $("#in-bg-size").addEventListener("change", (e) => saveAppearance({ bgSize: e.target.value }));
+  // スライダーは動かしている間は見た目だけ変え、離したときに保存する
+  const range = $("#in-bg-transparency");
+  range.addEventListener("input", () => {
+    $("#out-bg-transparency").value = `${range.value}%`;
+    applyBackdrop(appearanceOf({ ...settings, bgTransparency: range.value }));
+  });
+  range.addEventListener("change", () => saveAppearance({ bgTransparency: Number(range.value) }));
+
+  $("#btn-bg-pick").addEventListener("click", () => $("#in-bg-file").click());
+  $("#in-bg-file").addEventListener("change", onBackgroundChosen);
+  $("#btn-bg-clear").addEventListener("click", clearBackground);
+  darkQuery.addEventListener("change", () => applyTheme(shownTheme, shownAccent));
+}
+
+// 最初の描画より前に、前回の配色を付ける
+{
+  const cached = cachedAppearance();
+  applyTheme(cached.theme, cached.accent);
+}

@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sidebar</title>
+  <link rel="stylesheet" href="sidepanel.css" />
+  <!-- 最初の描画より前にテーマとアクセント色を付けるので、<head> で同期的に読む -->
+  <script src="appearance.js"></script>
+</head>
+<body>
+  <!-- 背景画像の層 (appearance.js が画像と透明度・寄せ・繰り返し・大きさを付ける) -->
+  <div id="backdrop" aria-hidden="true" hidden></div>
+  <!-- メイン画面 -->
+  <main id="view-main" class="view">
+    <section class="pins">
+      <header class="section-head">
+        <h2 data-i18n="pinsHeading"></h2>
+        <div class="head-actions">
+          <button id="btn-pin-current" class="icon-btn" data-icon="plus"></button>
+          <button id="btn-edit" class="icon-btn" data-i18n-title="editTitle" data-icon="pencil"></button>
+        </div>
+      </header>
+      <div id="pin-grid" class="pin-grid" data-i18n-label="pinGridLabel"></div>
+      <p id="pin-empty" class="hint" hidden><span data-i18n="pinEmptyHint"></span> <button type="button" id="link-import" class="link-btn" data-i18n="importHeading"></button></p>
+    </section>
+
+    <section class="pinned" id="pinned-section">
+      <header class="section-head">
+        <h2 data-i18n="pinnedHeading"></h2>
+        <div class="head-actions">
+          <button id="btn-pinned-folder" class="icon-btn" data-i18n-title="newFolderTitle" data-icon="folderPlus"></button>
+          <button id="btn-pinned-add" class="icon-btn" data-i18n-title="pinnedAddTitle" data-icon="plus"></button>
+          <button id="btn-pinned-edit" class="icon-btn" data-i18n-title="editTitle" data-icon="pencil"></button>
+        </div>
+      </header>
+      <div id="pinned-list" class="pinned-list today-list"></div>
+      <p id="pinned-empty" class="hint" data-i18n="pinnedEmptyHint" hidden></p>
+    </section>
+
+    <section class="github">
+      <header class="section-head">
+        <h2>GitHub</h2>
+        <div class="head-actions">
+          <span id="gh-updated" class="muted"></span>
+          <button id="btn-refresh" class="icon-btn" data-i18n-title="refreshNowTitle" data-icon="refresh"></button>
+          <button id="btn-settings" class="icon-btn" data-i18n-title="settingsTitle" data-icon="settings"></button>
+        </div>
+      </header>
+
+      <div id="gh-error" class="notice" hidden></div>
+
+      <div class="folder" data-folder="mine">
+        <button class="folder-head" aria-expanded="true">
+          <span class="chev" data-icon="chevron" data-icon-size="12"></span>
+          <span class="folder-title" data-i18n="folderMine"></span>
+          <span class="count" id="count-mine">0</span>
+        </button>
+        <ul class="pr-list" id="list-mine"></ul>
+      </div>
+
+      <div class="folder" data-folder="reviews">
+        <button class="folder-head" aria-expanded="true">
+          <span class="chev" data-icon="chevron" data-icon-size="12"></span>
+          <span class="folder-title" data-i18n="folderReviews"></span>
+          <span class="count" id="count-reviews">0</span>
+        </button>
+        <ul class="pr-list" id="list-reviews"></ul>
+      </div>
+    </section>
+
+    <section class="today">
+      <header class="section-head">
+        <h2 data-i18n="todayHeading"></h2>
+        <div class="head-actions">
+          <button id="btn-archive" class="icon-btn" data-i18n-title="archiveTitle" data-icon="archive"></button>
+          <button id="btn-clear-today" class="icon-btn" data-i18n-title="clearTodayTitle" data-icon="sweep"></button>
+          <button id="btn-new-tab" class="icon-btn" data-i18n-title="newTabTitle" data-icon="plus"></button>
+        </div>
+      </header>
+      <div id="today-list" class="today-list"></div>
+    </section>
+
+    <div id="toast" class="toast" role="status" hidden></div>
+  </main>
+
+  <!-- アーカイブ画面 -->
+  <section id="view-archive" class="view" hidden>
+    <header class="section-head">
+      <button id="btn-archive-back" class="icon-btn" data-i18n-title="backTitle" data-icon="back"></button>
+      <h2 data-i18n="archiveTitle"></h2>
+      <div class="head-actions">
+        <button id="btn-archive-clear" class="link-btn" data-i18n="archiveClearAll"></button>
+      </div>
+    </header>
+    <p class="hint" data-i18n="archiveHelp"></p>
+    <p id="archive-empty" class="hint" data-i18n="archiveEmpty" hidden></p>
+    <div id="archive-list" class="today-list"></div>
+  </section>
+
+  <!-- 設定画面 -->
+  <section id="view-settings" class="view" hidden>
+    <header class="section-head">
+      <button id="btn-back" class="icon-btn" data-i18n-title="backTitle" data-icon="back"></button>
+      <h2 data-i18n="settingsHeading"></h2>
+    </header>
+
+    <form id="settings-form" class="settings">
+      <label>
+        <span data-i18n="labelHost"></span>
+        <input id="in-host" type="text" placeholder="github.com" autocomplete="off" spellcheck="false" />
+        <small data-i18n="helpHost"></small>
+      </label>
+
+      <label>
+        <span data-i18n="labelToken"></span>
+        <input id="in-token" type="password" placeholder="ghp_..." autocomplete="off" />
+        <small data-i18n-html="helpToken"></small>
+      </label>
+
+      <label>
+        <span data-i18n="labelInterval"></span>
+        <select id="in-interval">
+          <option value="1" data-i18n-plural="intervalMinutes"></option>
+          <option value="2" data-i18n-plural="intervalMinutes"></option>
+          <option value="3" data-i18n-plural="intervalMinutes"></option>
+          <option value="5" data-i18n-plural="intervalMinutes"></option>
+          <option value="10" data-i18n-plural="intervalMinutes"></option>
+          <option value="15" data-i18n-plural="intervalMinutes"></option>
+        </select>
+      </label>
+
+      <label class="check">
+        <input id="in-show-mine" type="checkbox" />
+        <span data-i18n="optShowMine"></span>
+      </label>
+      <label class="check">
+        <input id="in-show-reviews" type="checkbox" />
+        <span data-i18n="optShowReviews"></span>
+      </label>
+      <label class="check">
+        <input id="in-team" type="checkbox" />
+        <span data-i18n="optIncludeTeam"></span>
+      </label>
+
+      <!-- 見た目はその場で反映して保存する (appearance.js)。選択肢は appearance.js の一覧から作る -->
+      <fieldset class="settings-group">
+      <legend data-i18n="settingsAppearance"></legend>
+      <label>
+        <span data-i18n="labelTheme"></span>
+        <select id="in-theme"></select>
+      </label>
+      <div class="field">
+        <span class="field-label" id="lbl-accent" data-i18n="labelAccent"></span>
+        <div id="in-accent" class="swatches" role="radiogroup" aria-labelledby="lbl-accent"></div>
+      </div>
+      <div class="field">
+        <span class="field-label" data-i18n="labelBgImage"></span>
+        <div class="bg-file">
+          <div id="bg-thumb" class="bg-thumb" hidden></div>
+          <button type="button" id="btn-bg-pick" class="btn-like" data-i18n="bgPick"></button>
+          <button type="button" id="btn-bg-clear" class="link-btn" data-i18n="bgClear" hidden></button>
+          <input id="in-bg-file" type="file" accept="image/*" hidden />
+        </div>
+        <small id="bg-status" class="bg-status" role="status" hidden></small>
+      </div>
+      <div id="bg-options" class="bg-options" hidden>
+        <label>
+          <span data-i18n="labelBgTransparency"></span>
+          <span class="range-row"><input id="in-bg-transparency" type="range" min="0" max="100" step="5" /><output id="out-bg-transparency" for="in-bg-transparency"></output></span>
+        </label>
+        <div class="field">
+          <span class="field-label" id="lbl-bg-position" data-i18n="labelBgPosition"></span>
+          <div id="in-bg-position" class="position-grid" role="radiogroup" aria-labelledby="lbl-bg-position"></div>
+        </div>
+        <label>
+          <span data-i18n="labelBgRepeat"></span>
+          <select id="in-bg-repeat"></select>
+        </label>
+        <label>
+          <span data-i18n="labelBgSize"></span>
+          <select id="in-bg-size"></select>
+        </label>
+      </div>
+      </fieldset>
+
+      <label class="check">
+        <input id="in-pin-tint" type="checkbox" />
+        <span data-i18n="optPinTint"></span>
+      </label>
+      <label class="check">
+        <input id="in-pin-hints" type="checkbox" />
+        <span data-i18n="optPinHints"></span>
+      </label>
+      <label>
+        <span data-i18n="labelAutoArchive"></span>
+        <select id="in-auto-archive">
+          <option value="0" data-i18n="archiveOff"></option>
+          <option value="1" data-i18n-plural="archiveAfterHours"></option>
+          <option value="6" data-i18n-plural="archiveAfterHours"></option>
+          <option value="12" data-i18n-plural="archiveAfterHours"></option>
+          <option value="24" data-i18n-plural="archiveAfterHours"></option>
+          <option value="168" data-i18n="archiveAfterWeek"></option>
+        </select>
+        <small data-i18n="helpAutoArchive"></small>
+      </label>
+      <label class="check">
+        <input id="in-pin-owned" type="checkbox" />
+        <span data-i18n="optPinOwnedTabs"></span>
+      </label>
+      <small class="sub" data-i18n="helpOwnedTabs"></small>
+      <label class="check">
+        <input id="in-gh-dedicated" type="checkbox" />
+        <span data-i18n="optGhDedicatedTab"></span>
+      </label>
+
+      <label>
+        <span data-i18n="labelMaxPins"></span>
+        <select id="in-maxpins">
+          <option value="12">12</option>
+          <option value="16">16</option>
+          <option value="20">20</option>
+          <option value="24">24</option>
+        </select>
+      </label>
+
+      <div class="form-actions">
+        <button type="submit" class="primary" data-i18n="saveAndRefresh"></button>
+        <span id="settings-status" class="muted"></span>
+      </div>
+    </form>
+
+    <section class="import">
+      <h3 data-i18n="importHeading"></h3>
+      <p id="import-help" class="hint"></p>
+      <input id="in-arc-file" type="file" accept=".json,application/json" hidden />
+      <button type="button" id="btn-arc-file" class="btn-like file-btn" data-i18n="importChooseFile"></button>
+      <p id="import-status" class="hint" hidden></p>
+
+      <div id="import-preview" hidden>
+        <div class="import-toolbar">
+          <button type="button" id="btn-import-all" class="link-btn" data-i18n="importSelectAll"></button>
+          <button type="button" id="btn-import-none" class="link-btn" data-i18n="importSelectNone"></button>
+        </div>
+        <div id="import-icons" class="import-icons" hidden>
+          <p class="hint" data-i18n-html="importIconsHelp"></p>
+          <input id="in-arc-icons" type="file" webkitdirectory hidden />
+          <button type="button" id="btn-arc-icons" class="btn-like file-btn" data-i18n="importIconsChoose"></button>
+          <span id="import-icons-status" class="muted"></span>
+        </div>
+        <div id="import-groups"></div>
+        <p id="import-note" class="hint" hidden></p>
+        <div class="form-actions">
+          <button type="button" id="btn-import" class="primary"></button>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <script src="ui-icons.js"></script>
+  <script src="i18n.js"></script>
+  <script src="arc-import.js"></script>
+  <script src="color.js"></script>
+  <script src="layout.js"></script>
+  <script src="reorder.js"></script>
+  <script src="split-items.js"></script>
+  <script src="pinned.js"></script>
+  <script src="split-items-ui.js"></script>
+  <script src="icons.js"></script>
+  <script src="sidepanel.js"></script>
+  <script src="split.js"></script>
+  <script src="today.js"></script>
+</body>
+</html>

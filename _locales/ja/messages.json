@@ -1,0 +1,667 @@
+{
+  "uiLocale": {
+    "message": "ja",
+    "description": "BCP 47 tag of this catalog, used for <html lang>. Set to this locale's tag; do not translate."
+  },
+  "appName": {
+    "message": "Engawa"
+  },
+  "appDescription": {
+    "message": "Arc 風のお気に入り、フォルダ付きのピン留めタブ、Today 欄、自動アーカイブ、GitHub ライブフォルダ (自分の PR / レビュー依頼) をサイドパネルに表示します。"
+  },
+  "cmdOpenSidebar": {
+    "message": "サイドバーを開く"
+  },
+  "cmdPinCurrentTab": {
+    "message": "現在のタブをお気に入りに追加"
+  },
+  "menuPinPage": {
+    "message": "このページをお気に入りに追加"
+  },
+  "menuPinLink": {
+    "message": "このリンクをお気に入りに追加"
+  },
+  "pinsHeading": {
+    "message": "お気に入り"
+  },
+  "editTitle": {
+    "message": "編集"
+  },
+  "pinGridLabel": {
+    "message": "お気に入りのサイト"
+  },
+  "pinEmptyHint": {
+    "message": "＋ でこのタブをお気に入りに追加できます。リンクをここにドラッグしても追加できます。"
+  },
+  "removeTitle": {
+    "message": "削除"
+  },
+  "renamePrompt": {
+    "message": "表示名を変更"
+  },
+  "pinLimitReached": {
+    "message": "お気に入りは $MAX$ 個までです",
+    "placeholders": {
+      "max": {
+        "content": "$1",
+        "example": "20"
+      }
+    }
+  },
+  "pinLimitReachedSettings": {
+    "message": "お気に入りは $MAX$ 個までです (設定で変更可)",
+    "placeholders": {
+      "max": {
+        "content": "$1",
+        "example": "20"
+      }
+    }
+  },
+  "pinDuplicate": {
+    "message": "すでに追加されています"
+  },
+  "refreshNowTitle": {
+    "message": "今すぐ更新"
+  },
+  "settingsTitle": {
+    "message": "設定"
+  },
+  "folderMine": {
+    "message": "自分のプルリクエスト"
+  },
+  "folderReviews": {
+    "message": "レビュー依頼"
+  },
+  "updatedAt": {
+    "message": "更新: $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1",
+        "example": "3 分前"
+      }
+    }
+  },
+  "prTooltip": {
+    "message": "$REPO$ #$NUMBER$\n$TITLE$\n$CI$ · 更新: $TIME$",
+    "placeholders": {
+      "repo": {
+        "content": "$1",
+        "example": "owner/repo"
+      },
+      "number": {
+        "content": "$2",
+        "example": "123"
+      },
+      "title": {
+        "content": "$3",
+        "example": "ログイン不具合の修正"
+      },
+      "ci": {
+        "content": "$4",
+        "example": "CI 成功"
+      },
+      "time": {
+        "content": "$5",
+        "example": "3 分前"
+      }
+    }
+  },
+  "errNoToken": {
+    "message": "GitHub のトークンが未設定です。"
+  },
+  "openSettings": {
+    "message": "設定を開く"
+  },
+  "errFetchFailed": {
+    "message": "取得に失敗しました: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1",
+        "example": "HTTP 401"
+      }
+    }
+  },
+  "errTokenInvalid": {
+    "message": " (トークンが無効)"
+  },
+  "ciDraft": {
+    "message": "Draft"
+  },
+  "ciSuccess": {
+    "message": "CI 成功"
+  },
+  "ciFailure": {
+    "message": "CI 失敗"
+  },
+  "ciError": {
+    "message": "CI エラー"
+  },
+  "ciPending": {
+    "message": "CI 実行中"
+  },
+  "ciExpected": {
+    "message": "CI 待機中"
+  },
+  "ciNone": {
+    "message": "CI なし"
+  },
+  "reviewApproved": {
+    "message": "承認済み"
+  },
+  "reviewChangesRequested": {
+    "message": "修正依頼"
+  },
+  "reviewRequired": {
+    "message": "レビュー待ち"
+  },
+  "timeJustNow": {
+    "message": "たった今"
+  },
+  "timeMinutesAgo_one": {
+    "message": "1 分前"
+  },
+  "timeMinutesAgo_other": {
+    "message": "$N$ 分前",
+    "placeholders": {
+      "n": {
+        "content": "$1",
+        "example": "5"
+      }
+    }
+  },
+  "timeHoursAgo_one": {
+    "message": "1 時間前"
+  },
+  "timeHoursAgo_other": {
+    "message": "$N$ 時間前",
+    "placeholders": {
+      "n": {
+        "content": "$1",
+        "example": "5"
+      }
+    }
+  },
+  "timeDaysAgo_one": {
+    "message": "1 日前"
+  },
+  "timeDaysAgo_other": {
+    "message": "$N$ 日前",
+    "placeholders": {
+      "n": {
+        "content": "$1",
+        "example": "5"
+      }
+    }
+  },
+  "settingsHeading": {
+    "message": "設定"
+  },
+  "backTitle": {
+    "message": "戻る"
+  },
+  "labelHost": {
+    "message": "GitHub ホスト"
+  },
+  "helpHost": {
+    "message": "GitHub Enterprise Server の場合はそのホスト名 (例: github.example.co.jp)"
+  },
+  "labelToken": {
+    "message": "Personal access token"
+  },
+  "helpToken": {
+    "message": "classic トークンなら <code>repo</code> スコープ、fine-grained なら Pull requests の読み取り権限が必要です。この端末内にのみ保存されます。"
+  },
+  "labelInterval": {
+    "message": "更新間隔"
+  },
+  "intervalMinutes_one": {
+    "message": "1 分"
+  },
+  "intervalMinutes_other": {
+    "message": "$N$ 分",
+    "placeholders": {
+      "n": {
+        "content": "$1",
+        "example": "5"
+      }
+    }
+  },
+  "optShowMine": {
+    "message": "自分のプルリクエストを表示"
+  },
+  "optShowReviews": {
+    "message": "レビュー依頼を表示"
+  },
+  "optIncludeTeam": {
+    "message": "チーム宛てのレビュー依頼も含める"
+  },
+  "labelMaxPins": {
+    "message": "お気に入りの上限"
+  },
+  "saveAndRefresh": {
+    "message": "保存して更新"
+  },
+  "errHostPermission": {
+    "message": "$HOST$ へのアクセス許可が必要です",
+    "placeholders": {
+      "host": {
+        "content": "$1",
+        "example": "github.example.co.jp"
+      }
+    }
+  },
+  "statusSaved": {
+    "message": "保存しました。更新中..."
+  },
+  "statusError": {
+    "message": "エラー: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1",
+        "example": "HTTP 401"
+      }
+    }
+  },
+  "statusConnected": {
+    "message": "接続できました"
+  },
+  "withShortcut": {
+    "message": "$LABEL$ ($SHORTCUT$)",
+    "placeholders": {
+      "label": {
+        "content": "$1",
+        "example": "現在のタブをピン留め"
+      },
+      "shortcut": {
+        "content": "$2",
+        "example": "⌥⇧P"
+      }
+    }
+  },
+  "errNetwork": {
+    "message": "$HOST$ に接続できません。ネットワーク接続とホスト名を確認してください。",
+    "placeholders": {
+      "host": {
+        "content": "$1",
+        "example": "github.com"
+      }
+    }
+  },
+  "errBadResponse": {
+    "message": "$HOST$ から想定外の応答が返りました。ホスト名を確認してください (GitHub Enterprise Server の場合は /api を除いたサーバー名)。",
+    "placeholders": {
+      "host": {
+        "content": "$1",
+        "example": "github.example.co.jp"
+      }
+    }
+  },
+  "importHeading": {
+    "message": "Arc からインポート"
+  },
+  "importHelp": {
+    "message": "Arc のデータフォルダにあるサイドバーファイル <code>StorableSidebar.json</code> を選んでください。ファイルはブラウザ内で読み取るだけで、どこにも送信されません。"
+  },
+  "importChooseFile": {
+    "message": "ファイルを選択…"
+  },
+  "importFavorites": {
+    "message": "お気に入り"
+  },
+  "importSpacePins": {
+    "message": "$SPACE$ のピン留め",
+    "placeholders": {
+      "space": {
+        "content": "$1",
+        "example": "仕事"
+      }
+    }
+  },
+  "importUnnamedSpace": {
+    "message": "スペース $N$",
+    "placeholders": {
+      "n": {
+        "content": "$1",
+        "example": "1"
+      }
+    }
+  },
+  "importAlreadyPinned": {
+    "message": "ピン留め済み"
+  },
+  "importSelectAll": {
+    "message": "すべて選択"
+  },
+  "importSelectNone": {
+    "message": "選択解除"
+  },
+  "importButton": {
+    "message": "選択した $N$ 件をインポート",
+    "placeholders": {
+      "n": {
+        "content": "$1",
+        "example": "7"
+      }
+    }
+  },
+  "importParseError": {
+    "message": "Arc のサイドバーファイルとして読み取れませんでした"
+  },
+  "importEmpty": {
+    "message": "インポートできるピン留めが見つかりませんでした"
+  },
+  "importRaiseLimit": {
+    "message": "お気に入りの上限を $N$ に引き上げます",
+    "placeholders": {
+      "n": {
+        "content": "$1",
+        "example": "24"
+      }
+    }
+  },
+  "optPinOwnedTabs": {
+    "message": "お気に入りを Chrome の固定タブにする"
+  },
+  "helpOwnedTabs": {
+    "message": "Arc と同じように、お気に入り、ピン留めタブ、GitHub の PR はそれぞれ専用のタブ 1 枚を使い回し、クリックのたびに新しいタブを増やしません。固定タブにするのはお気に入りだけで、タブバーの左端に小さなアイコンで並び、普段のタブと分かれて見えます (ピン留めタブと PR のタブは通常のタブのままです)。"
+  },
+  "optGhDedicatedTab": {
+    "message": "PR ごとに専用のタブで開く (タブを使い回す)"
+  },
+  "importHelpMac": {
+    "message": "Arc のサイドバーファイル <code>~/Library/Application Support/Arc/StorableSidebar.json</code> を選んでください。ファイルダイアログで ⌘⇧G を押してこのパスを貼り付けると開けます (Library フォルダは非表示です)。ファイルはブラウザ内で読み取るだけで、どこにも送信されません。"
+  },
+  "importDone_one": {
+    "message": "1 件をインポートしました"
+  },
+  "importDone_other": {
+    "message": "$N$ 件をインポートしました",
+    "placeholders": {
+      "n": {
+        "content": "$1",
+        "example": "7"
+      }
+    }
+  },
+  "importUntitledFolder": {
+    "message": "無題のフォルダ"
+  },
+  "pinUnsupportedUrl": {
+    "message": "このページは追加できません"
+  },
+  "pinAddError": {
+    "message": "追加できませんでした。もう一度お試しください"
+  },
+  "importTooMany": {
+    "message": "Chrome の同期ストレージに保存できる量を超えています。選択を減らしてからもう一度お試しください。"
+  },
+  "importIconsHelp": {
+    "message": "任意: Arc と同じアイコンを使うには、同じ Arc フォルダ内の <code>SidebarItemsFaviconCache</code> フォルダも選んでください。Chrome の確認ダイアログが出たら許可してください。どこにも送信されません。"
+  },
+  "importIconsChoose": {
+    "message": "アイコンフォルダを選択…"
+  },
+  "importIconsDone_one": {
+    "message": "1 件のアイコンを読み込みました"
+  },
+  "importIconsDone_other": {
+    "message": "$N$ 件のアイコンを読み込みました",
+    "placeholders": {
+      "n": {
+        "content": "$1",
+        "example": "7"
+      }
+    }
+  },
+  "importIconsNone": {
+    "message": "対応するアイコンが見つかりませんでした"
+  },
+  "statusSavedOnly": {
+    "message": "保存しました"
+  },
+  "pinStorageFull": {
+    "message": "この欄の同期ストレージがいっぱいです。項目を削除するか表示名を短くしてください。"
+  },
+  "optPinTint": {
+    "message": "お気に入りの背景をアイコンの色にする"
+  },
+  "todayHeading": {
+    "message": "Today"
+  },
+  "newTabTitle": {
+    "message": "新しいタブ"
+  },
+  "clearTodayTitle": {
+    "message": "表示中以外のタブをすべてアーカイブ"
+  },
+  "closeTabTitle": {
+    "message": "タブを閉じる"
+  },
+  "splitGripTitle": {
+    "message": "ドラッグで分割表示ごと移動。タブをドラッグすると、その 1 枚だけを分割から出せます"
+  },
+  "splitPullHint": {
+    "message": "Option を押しながらドラッグすると、その 1 枚だけを分割から出せます"
+  },
+  "archiveTitle": {
+    "message": "アーカイブ"
+  },
+  "archiveHelp": {
+    "message": "クリックすると開き直します。"
+  },
+  "archiveEmpty": {
+    "message": "アーカイブしたタブはまだありません。"
+  },
+  "archiveClearAll": {
+    "message": "アーカイブを空にする"
+  },
+  "archiveRestoreTitle": {
+    "message": "開き直す"
+  },
+  "archiveDeleteTitle": {
+    "message": "アーカイブから削除"
+  },
+  "archivedToast_one": {
+    "message": "1 件のタブをアーカイブしました"
+  },
+  "archivedToast_other": {
+    "message": "$N$ 件のタブをアーカイブしました",
+    "placeholders": {
+      "n": {
+        "content": "$1",
+        "example": "5"
+      }
+    }
+  },
+  "labelAutoArchive": {
+    "message": "見ていないタブを自動でアーカイブ"
+  },
+  "archiveOff": {
+    "message": "しない"
+  },
+  "archiveAfterHours_one": {
+    "message": "1 時間後"
+  },
+  "archiveAfterHours_other": {
+    "message": "$N$ 時間後",
+    "placeholders": {
+      "n": {
+        "content": "$1",
+        "example": "12"
+      }
+    }
+  },
+  "archiveAfterWeek": {
+    "message": "1 週間後"
+  },
+  "helpAutoArchive": {
+    "message": "Arc と同じように、しばらく見ていないタブを閉じてアーカイブ (Today 欄の箱のボタン) に残します。アーカイブからいつでも開き直せます。固定タブ、お気に入り・ピン留めタブ・GitHub の PR の専用のタブ、表示中のタブ、音を出しているタブ、シークレットウィンドウのタブはアーカイブしません。未保存の入力があるタブでは Chrome の「離れますか」の確認が出て、キャンセルすると開いたままになります。"
+  },
+  "pinnedHeading": {
+    "message": "ピン留めタブ"
+  },
+  "pinnedAddTitle": {
+    "message": "現在のタブをピン留め"
+  },
+  "newFolderTitle": {
+    "message": "新しいフォルダ"
+  },
+  "pinnedEmptyHint": {
+    "message": "ピン留めタブはフォルダ (フォルダのボタン) にまとめられます。＋ で現在のタブをピン留めできます。"
+  },
+  "importTargetGrid": {
+    "message": "→ お気に入り"
+  },
+  "importTargetPinned": {
+    "message": "→ ピン留めタブ"
+  },
+  "importTargetPinnedFolder": {
+    "message": "→ ピン留めタブ (フォルダ「$NAME$」に)",
+    "placeholders": {
+      "name": {
+        "content": "$1",
+        "example": "仕事"
+      }
+    }
+  },
+  "importAlreadyFavorite": {
+    "message": "お気に入りに追加済み"
+  },
+  "optPinHints": {
+    "message": "お気に入りに短い名前を表示する"
+  },
+  "splitOpenFailed": {
+    "message": "分割表示を開けませんでした。タブは開いたままです"
+  },
+  "splitItemTitle": {
+    "message": "$LEFT$ | $RIGHT$",
+    "placeholders": {
+      "left": {
+        "content": "$1"
+      },
+      "right": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsAppearance": {
+    "message": "見た目"
+  },
+  "labelTheme": {
+    "message": "テーマ"
+  },
+  "themeAuto": {
+    "message": "自動 (OS に従う)"
+  },
+  "themeLight": {
+    "message": "ライト"
+  },
+  "themeDark": {
+    "message": "ダーク"
+  },
+  "labelAccent": {
+    "message": "アクセント色"
+  },
+  "accentIndigo": {
+    "message": "藍"
+  },
+  "accentBlue": {
+    "message": "青"
+  },
+  "accentTeal": {
+    "message": "青緑"
+  },
+  "accentPurple": {
+    "message": "紫"
+  },
+  "accentPink": {
+    "message": "ピンク"
+  },
+  "accentOrange": {
+    "message": "オレンジ"
+  },
+  "accentGraphite": {
+    "message": "グラファイト"
+  },
+  "labelBgImage": {
+    "message": "背景画像"
+  },
+  "bgPick": {
+    "message": "画像を選ぶ…"
+  },
+  "bgClear": {
+    "message": "外す"
+  },
+  "labelBgTransparency": {
+    "message": "透明度"
+  },
+  "labelBgPosition": {
+    "message": "寄せ"
+  },
+  "bgPosTopLeft": {
+    "message": "左上"
+  },
+  "bgPosTop": {
+    "message": "上"
+  },
+  "bgPosTopRight": {
+    "message": "右上"
+  },
+  "bgPosLeft": {
+    "message": "左"
+  },
+  "bgPosCenter": {
+    "message": "中央"
+  },
+  "bgPosRight": {
+    "message": "右"
+  },
+  "bgPosBottomLeft": {
+    "message": "左下"
+  },
+  "bgPosBottom": {
+    "message": "下"
+  },
+  "bgPosBottomRight": {
+    "message": "右下"
+  },
+  "labelBgRepeat": {
+    "message": "繰り返し"
+  },
+  "bgRepeatNone": {
+    "message": "しない"
+  },
+  "bgRepeatBoth": {
+    "message": "縦横"
+  },
+  "bgRepeatX": {
+    "message": "横だけ"
+  },
+  "bgRepeatY": {
+    "message": "縦だけ"
+  },
+  "labelBgSize": {
+    "message": "大きさ"
+  },
+  "bgSizeCover": {
+    "message": "全体を覆う"
+  },
+  "bgSizeWidth": {
+    "message": "幅に合わせる"
+  },
+  "bgSizeAuto": {
+    "message": "原寸"
+  },
+  "errBgNotImage": {
+    "message": "画像ファイルではありません。"
+  },
+  "errBgLoadFailed": {
+    "message": "この画像を読み込めませんでした。"
+  },
+  "errBgTooLarge": {
+    "message": "縮めても大きすぎる画像です。小さめの画像を選んでください。"
+  },
+  "errBgStorageFull": {
+    "message": "保存領域が足りず、画像を保存できませんでした。"
+  }
+}

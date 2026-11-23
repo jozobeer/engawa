@@ -1,0 +1,667 @@
+{
+  "uiLocale": {
+    "message": "en",
+    "description": "BCP 47 tag of this catalog, used for <html lang>. Set to this locale's tag; do not translate."
+  },
+  "appName": {
+    "message": "Engawa"
+  },
+  "appDescription": {
+    "message": "Arc-style favorites, pinned tabs with folders, Today list, auto-archive and GitHub live folders for your pull requests, right in the side panel."
+  },
+  "cmdOpenSidebar": {
+    "message": "Open sidebar"
+  },
+  "cmdPinCurrentTab": {
+    "message": "Add current tab to Favorites"
+  },
+  "menuPinPage": {
+    "message": "Add this page to Favorites"
+  },
+  "menuPinLink": {
+    "message": "Add this link to Favorites"
+  },
+  "pinsHeading": {
+    "message": "Favorites"
+  },
+  "editTitle": {
+    "message": "Edit"
+  },
+  "pinGridLabel": {
+    "message": "Favorite sites"
+  },
+  "pinEmptyHint": {
+    "message": "Click + to add this tab to Favorites, or drag a link here."
+  },
+  "removeTitle": {
+    "message": "Remove"
+  },
+  "renamePrompt": {
+    "message": "Rename"
+  },
+  "pinLimitReached": {
+    "message": "You can have up to $MAX$ favorites",
+    "placeholders": {
+      "max": {
+        "content": "$1",
+        "example": "20"
+      }
+    }
+  },
+  "pinLimitReachedSettings": {
+    "message": "You can have up to $MAX$ favorites (change in settings)",
+    "placeholders": {
+      "max": {
+        "content": "$1",
+        "example": "20"
+      }
+    }
+  },
+  "pinDuplicate": {
+    "message": "Already added"
+  },
+  "refreshNowTitle": {
+    "message": "Refresh now"
+  },
+  "settingsTitle": {
+    "message": "Settings"
+  },
+  "folderMine": {
+    "message": "My pull requests"
+  },
+  "folderReviews": {
+    "message": "Review requests"
+  },
+  "updatedAt": {
+    "message": "Updated $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1",
+        "example": "3 min ago"
+      }
+    }
+  },
+  "prTooltip": {
+    "message": "$REPO$ #$NUMBER$\n$TITLE$\n$CI$ · Updated $TIME$",
+    "placeholders": {
+      "repo": {
+        "content": "$1",
+        "example": "owner/repo"
+      },
+      "number": {
+        "content": "$2",
+        "example": "123"
+      },
+      "title": {
+        "content": "$3",
+        "example": "Fix login bug"
+      },
+      "ci": {
+        "content": "$4",
+        "example": "CI passed"
+      },
+      "time": {
+        "content": "$5",
+        "example": "3 min ago"
+      }
+    }
+  },
+  "errNoToken": {
+    "message": "GitHub token is not set. "
+  },
+  "openSettings": {
+    "message": "Open settings"
+  },
+  "errFetchFailed": {
+    "message": "Couldn't load pull requests: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1",
+        "example": "HTTP 401"
+      }
+    }
+  },
+  "errTokenInvalid": {
+    "message": " (invalid token)"
+  },
+  "ciDraft": {
+    "message": "Draft"
+  },
+  "ciSuccess": {
+    "message": "CI passed"
+  },
+  "ciFailure": {
+    "message": "CI failed"
+  },
+  "ciError": {
+    "message": "CI error"
+  },
+  "ciPending": {
+    "message": "CI running"
+  },
+  "ciExpected": {
+    "message": "CI waiting"
+  },
+  "ciNone": {
+    "message": "No CI"
+  },
+  "reviewApproved": {
+    "message": "Approved"
+  },
+  "reviewChangesRequested": {
+    "message": "Changes requested"
+  },
+  "reviewRequired": {
+    "message": "Review required"
+  },
+  "timeJustNow": {
+    "message": "Just now"
+  },
+  "timeMinutesAgo_one": {
+    "message": "1 minute ago"
+  },
+  "timeMinutesAgo_other": {
+    "message": "$N$ minutes ago",
+    "placeholders": {
+      "n": {
+        "content": "$1",
+        "example": "5"
+      }
+    }
+  },
+  "timeHoursAgo_one": {
+    "message": "1 hour ago"
+  },
+  "timeHoursAgo_other": {
+    "message": "$N$ hours ago",
+    "placeholders": {
+      "n": {
+        "content": "$1",
+        "example": "5"
+      }
+    }
+  },
+  "timeDaysAgo_one": {
+    "message": "1 day ago"
+  },
+  "timeDaysAgo_other": {
+    "message": "$N$ days ago",
+    "placeholders": {
+      "n": {
+        "content": "$1",
+        "example": "5"
+      }
+    }
+  },
+  "settingsHeading": {
+    "message": "Settings"
+  },
+  "backTitle": {
+    "message": "Back"
+  },
+  "labelHost": {
+    "message": "GitHub host"
+  },
+  "helpHost": {
+    "message": "For GitHub Enterprise Server, enter its hostname (e.g. github.example.com)"
+  },
+  "labelToken": {
+    "message": "Personal access token"
+  },
+  "helpToken": {
+    "message": "A classic token needs the <code>repo</code> scope; a fine-grained token needs read access to Pull requests. Stored only on this device."
+  },
+  "labelInterval": {
+    "message": "Refresh interval"
+  },
+  "intervalMinutes_one": {
+    "message": "1 minute"
+  },
+  "intervalMinutes_other": {
+    "message": "$N$ minutes",
+    "placeholders": {
+      "n": {
+        "content": "$1",
+        "example": "5"
+      }
+    }
+  },
+  "optShowMine": {
+    "message": "Show my pull requests"
+  },
+  "optShowReviews": {
+    "message": "Show review requests"
+  },
+  "optIncludeTeam": {
+    "message": "Include review requests to my teams"
+  },
+  "labelMaxPins": {
+    "message": "Maximum favorites"
+  },
+  "saveAndRefresh": {
+    "message": "Save and refresh"
+  },
+  "errHostPermission": {
+    "message": "Permission to access $HOST$ is required",
+    "placeholders": {
+      "host": {
+        "content": "$1",
+        "example": "github.example.com"
+      }
+    }
+  },
+  "statusSaved": {
+    "message": "Saved. Refreshing..."
+  },
+  "statusError": {
+    "message": "Error: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1",
+        "example": "HTTP 401"
+      }
+    }
+  },
+  "statusConnected": {
+    "message": "Connected"
+  },
+  "withShortcut": {
+    "message": "$LABEL$ ($SHORTCUT$)",
+    "placeholders": {
+      "label": {
+        "content": "$1",
+        "example": "Pin current tab"
+      },
+      "shortcut": {
+        "content": "$2",
+        "example": "⌥⇧P"
+      }
+    }
+  },
+  "errNetwork": {
+    "message": "Can't reach $HOST$. Check your connection and the hostname.",
+    "placeholders": {
+      "host": {
+        "content": "$1",
+        "example": "github.com"
+      }
+    }
+  },
+  "errBadResponse": {
+    "message": "$HOST$ returned an unexpected response. Check the hostname (for GitHub Enterprise Server, use the server's hostname without /api).",
+    "placeholders": {
+      "host": {
+        "content": "$1",
+        "example": "github.example.com"
+      }
+    }
+  },
+  "importHeading": {
+    "message": "Import from Arc"
+  },
+  "importHelp": {
+    "message": "Choose Arc's sidebar file, <code>StorableSidebar.json</code>, from Arc's data folder. The file is read in your browser and never uploaded."
+  },
+  "importChooseFile": {
+    "message": "Choose file…"
+  },
+  "importFavorites": {
+    "message": "Favorites"
+  },
+  "importSpacePins": {
+    "message": "Pinned in $SPACE$",
+    "placeholders": {
+      "space": {
+        "content": "$1",
+        "example": "Work"
+      }
+    }
+  },
+  "importUnnamedSpace": {
+    "message": "Space $N$",
+    "placeholders": {
+      "n": {
+        "content": "$1",
+        "example": "1"
+      }
+    }
+  },
+  "importAlreadyPinned": {
+    "message": "Already pinned"
+  },
+  "importSelectAll": {
+    "message": "Select all"
+  },
+  "importSelectNone": {
+    "message": "Clear selection"
+  },
+  "importButton": {
+    "message": "Import $N$ selected",
+    "placeholders": {
+      "n": {
+        "content": "$1",
+        "example": "7"
+      }
+    }
+  },
+  "importParseError": {
+    "message": "This doesn't look like Arc's sidebar file"
+  },
+  "importEmpty": {
+    "message": "No pinned sites were found in this file"
+  },
+  "importRaiseLimit": {
+    "message": "The favorites limit will be raised to $N$",
+    "placeholders": {
+      "n": {
+        "content": "$1",
+        "example": "24"
+      }
+    }
+  },
+  "optPinOwnedTabs": {
+    "message": "Open favorites as Chrome pinned tabs"
+  },
+  "helpOwnedTabs": {
+    "message": "Like Arc, each favorite, each pinned tab and each GitHub pull request reuse one dedicated tab instead of opening a new one on every click. Only favorites become Chrome pinned tabs, which sit as small icons at the left of the tab strip, apart from your other tabs (the tabs of pinned tabs and pull requests stay ordinary tabs)."
+  },
+  "optGhDedicatedTab": {
+    "message": "Open each pull request in its own dedicated tab (tabs are reused)"
+  },
+  "importHelpMac": {
+    "message": "Choose Arc's sidebar file: <code>~/Library/Application Support/Arc/StorableSidebar.json</code>. In the file dialog, press ⌘⇧G and paste that path (the Library folder is hidden). The file is read in your browser and never uploaded."
+  },
+  "importDone_one": {
+    "message": "Imported 1 item"
+  },
+  "importDone_other": {
+    "message": "Imported $N$ items",
+    "placeholders": {
+      "n": {
+        "content": "$1",
+        "example": "7"
+      }
+    }
+  },
+  "importUntitledFolder": {
+    "message": "Untitled folder"
+  },
+  "pinUnsupportedUrl": {
+    "message": "This page can't be added"
+  },
+  "pinAddError": {
+    "message": "Couldn't add. Please try again."
+  },
+  "importTooMany": {
+    "message": "That's more than Chrome sync can store in one item. Clear some selections and try again."
+  },
+  "importIconsHelp": {
+    "message": "Optional: to use the same icons as in Arc, also choose the <code>SidebarItemsFaviconCache</code> folder in the same Arc folder. If Chrome asks to confirm, allow it. Nothing is uploaded."
+  },
+  "importIconsChoose": {
+    "message": "Choose icon folder…"
+  },
+  "importIconsDone_one": {
+    "message": "Loaded 1 icon"
+  },
+  "importIconsDone_other": {
+    "message": "Loaded $N$ icons",
+    "placeholders": {
+      "n": {
+        "content": "$1",
+        "example": "7"
+      }
+    }
+  },
+  "importIconsNone": {
+    "message": "No matching icons in this folder"
+  },
+  "statusSavedOnly": {
+    "message": "Saved"
+  },
+  "pinStorageFull": {
+    "message": "Chrome sync storage for this section is full. Remove an item or shorten names to add more."
+  },
+  "optPinTint": {
+    "message": "Tint favorites with their icon colors"
+  },
+  "todayHeading": {
+    "message": "Today"
+  },
+  "newTabTitle": {
+    "message": "New tab"
+  },
+  "clearTodayTitle": {
+    "message": "Archive all tabs except the current one"
+  },
+  "closeTabTitle": {
+    "message": "Close tab"
+  },
+  "splitGripTitle": {
+    "message": "Drag to move the whole split view. Drag a tab to pull it out of the split"
+  },
+  "splitPullHint": {
+    "message": "Option-drag a tab to pull it out of the split"
+  },
+  "archiveTitle": {
+    "message": "Archive"
+  },
+  "archiveHelp": {
+    "message": "Click a tab to reopen it."
+  },
+  "archiveEmpty": {
+    "message": "No archived tabs yet."
+  },
+  "archiveClearAll": {
+    "message": "Clear archive"
+  },
+  "archiveRestoreTitle": {
+    "message": "Reopen"
+  },
+  "archiveDeleteTitle": {
+    "message": "Remove from archive"
+  },
+  "archivedToast_one": {
+    "message": "Archived 1 tab"
+  },
+  "archivedToast_other": {
+    "message": "Archived $N$ tabs",
+    "placeholders": {
+      "n": {
+        "content": "$1",
+        "example": "5"
+      }
+    }
+  },
+  "labelAutoArchive": {
+    "message": "Archive tabs not viewed for"
+  },
+  "archiveOff": {
+    "message": "Never"
+  },
+  "archiveAfterHours_one": {
+    "message": "1 hour"
+  },
+  "archiveAfterHours_other": {
+    "message": "$N$ hours",
+    "placeholders": {
+      "n": {
+        "content": "$1",
+        "example": "12"
+      }
+    }
+  },
+  "archiveAfterWeek": {
+    "message": "1 week"
+  },
+  "helpAutoArchive": {
+    "message": "Like Arc, tabs you haven't looked at for a while are closed and kept in the Archive (the box button in Today), where you can reopen them. Chrome's pinned tabs, the dedicated tabs of Favorites, Pinned tabs and GitHub pull requests, the current tab, tabs playing audio and tabs in Incognito windows are never archived. A tab with unsaved input shows Chrome's leave-page prompt and is left open if you cancel."
+  },
+  "pinnedHeading": {
+    "message": "Pinned tabs"
+  },
+  "pinnedAddTitle": {
+    "message": "Pin current tab"
+  },
+  "newFolderTitle": {
+    "message": "New folder"
+  },
+  "pinnedEmptyHint": {
+    "message": "Pinned tabs can be grouped in folders (the folder button). Click + to pin the current tab."
+  },
+  "importTargetGrid": {
+    "message": "→ Favorites"
+  },
+  "importTargetPinned": {
+    "message": "→ Pinned tabs"
+  },
+  "importTargetPinnedFolder": {
+    "message": "→ Pinned tabs, in a folder “$NAME$”",
+    "placeholders": {
+      "name": {
+        "content": "$1",
+        "example": "Work"
+      }
+    }
+  },
+  "importAlreadyFavorite": {
+    "message": "Already in Favorites"
+  },
+  "optPinHints": {
+    "message": "Show a short name on each favorite"
+  },
+  "splitOpenFailed": {
+    "message": "Couldn't open them as a split view. The tabs are still open"
+  },
+  "splitItemTitle": {
+    "message": "$LEFT$ | $RIGHT$",
+    "placeholders": {
+      "left": {
+        "content": "$1"
+      },
+      "right": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsAppearance": {
+    "message": "Appearance"
+  },
+  "labelTheme": {
+    "message": "Theme"
+  },
+  "themeAuto": {
+    "message": "Automatic (follow the system)"
+  },
+  "themeLight": {
+    "message": "Light"
+  },
+  "themeDark": {
+    "message": "Dark"
+  },
+  "labelAccent": {
+    "message": "Accent color"
+  },
+  "accentIndigo": {
+    "message": "Indigo"
+  },
+  "accentBlue": {
+    "message": "Blue"
+  },
+  "accentTeal": {
+    "message": "Teal"
+  },
+  "accentPurple": {
+    "message": "Purple"
+  },
+  "accentPink": {
+    "message": "Pink"
+  },
+  "accentOrange": {
+    "message": "Orange"
+  },
+  "accentGraphite": {
+    "message": "Graphite"
+  },
+  "labelBgImage": {
+    "message": "Background image"
+  },
+  "bgPick": {
+    "message": "Choose image…"
+  },
+  "bgClear": {
+    "message": "Remove"
+  },
+  "labelBgTransparency": {
+    "message": "Transparency"
+  },
+  "labelBgPosition": {
+    "message": "Alignment"
+  },
+  "bgPosTopLeft": {
+    "message": "Top left"
+  },
+  "bgPosTop": {
+    "message": "Top"
+  },
+  "bgPosTopRight": {
+    "message": "Top right"
+  },
+  "bgPosLeft": {
+    "message": "Left"
+  },
+  "bgPosCenter": {
+    "message": "Center"
+  },
+  "bgPosRight": {
+    "message": "Right"
+  },
+  "bgPosBottomLeft": {
+    "message": "Bottom left"
+  },
+  "bgPosBottom": {
+    "message": "Bottom"
+  },
+  "bgPosBottomRight": {
+    "message": "Bottom right"
+  },
+  "labelBgRepeat": {
+    "message": "Repeat"
+  },
+  "bgRepeatNone": {
+    "message": "Don't repeat"
+  },
+  "bgRepeatBoth": {
+    "message": "Tile"
+  },
+  "bgRepeatX": {
+    "message": "Horizontally"
+  },
+  "bgRepeatY": {
+    "message": "Vertically"
+  },
+  "labelBgSize": {
+    "message": "Size"
+  },
+  "bgSizeCover": {
+    "message": "Fill the panel"
+  },
+  "bgSizeWidth": {
+    "message": "Fit the width"
+  },
+  "bgSizeAuto": {
+    "message": "Original size"
+  },
+  "errBgNotImage": {
+    "message": "This file is not an image."
+  },
+  "errBgLoadFailed": {
+    "message": "Couldn't read this image."
+  },
+  "errBgTooLarge": {
+    "message": "This image is too large even after shrinking it. Choose a smaller one."
+  },
+  "errBgStorageFull": {
+    "message": "Not enough storage to save this image."
+  }
+}

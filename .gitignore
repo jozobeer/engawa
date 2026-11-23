@@ -1,0 +1,26 @@
+# OS / エディタ
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+
+# 配布物・鍵 (Chrome がパッケージ化するときに作る .pem は秘密鍵)
+*.zip
+*.crx
+*.pem
+dist/
+
+# 依存・キャッシュ・ログ
+node_modules/
+__pycache__/
+*.pyc
+*.log
+
+# Claude Code のローカル設定とメモ (個人の環境依存。共有するものは .claude/settings.json と .claude/rules/)
+.claude/settings.local.json
+CLAUDE.local.md
+
+# 環境変数ファイル
+.env
+.env.*

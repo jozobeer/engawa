@@ -1,0 +1,575 @@
+:root {
+  --bg: #eef0f6;
+  --bg-grad: linear-gradient(180deg, #eef0f6 0%, #e6e9f3 100%);
+  --panel: rgba(255, 255, 255, 0.55);
+  --tile: rgba(255, 255, 255, 0.85);
+  --tile-hover: #ffffff;
+  --fg: #1f2330;
+  --muted: #6b7280;
+  --border: rgba(0, 0, 0, 0.06);
+  --accent: var(--accent-indigo);
+  --danger: #e5484d;
+  --ok: #2ea043;
+  --warn: #d29922;
+  --radius: 12px;
+  /* アクセント色 (設定で選ぶ。appearance.js の ACCENTS)。白い文字を載せても読める濃さにする */
+  --accent-indigo: #5b6cff;
+  --accent-blue: #2a7de1;
+  --accent-teal: #0e8f84;
+  --accent-purple: #8357e8;
+  --accent-pink: #d9437a;
+  --accent-orange: #c7631a;
+  --accent-graphite: #5c6372;
+  color-scheme: light;
+}
+/* ダークの配色。<html data-scheme="dark"> は appearance.js が付ける (テーマが「自動」なら OS の設定に従う)。
+   ダーク用の規則は :where() で包み、詳細度をライトの規則と同じに保つ (後に書いた方が勝つ) */
+:root[data-scheme="dark"] {
+  --bg: #1c1e26;
+  --bg-grad: linear-gradient(180deg, #1c1e26 0%, #171920 100%);
+  --panel: rgba(255, 255, 255, 0.04);
+  --tile: rgba(255, 255, 255, 0.08);
+  --tile-hover: rgba(255, 255, 255, 0.14);
+  --fg: #e6e8ef;
+  --muted: #9aa0ad;
+  --border: rgba(255, 255, 255, 0.08);
+  --accent-indigo: #7c8aff;
+  --accent-blue: #4f97ec;
+  --accent-teal: #1fa596;
+  --accent-purple: #9b7bf2;
+  --accent-pink: #e5679a;
+  --accent-orange: #df782b;
+  --accent-graphite: #7e8696;
+  color-scheme: dark;
+}
+:where(:root[data-scheme="dark"]) .section-head h2 { color: rgb(0 0 0 / .55); text-shadow: 0 1px 0 rgb(255 255 255 / .22), 0 -1px 0 rgb(0 0 0 / .8); }
+/* 既定 (indigo) 以外のアクセント色。ライトとダークの値の切り替えは --accent-<id> の側で済む */
+:root[data-accent="blue"] { --accent: var(--accent-blue); }
+:root[data-accent="teal"] { --accent: var(--accent-teal); }
+:root[data-accent="purple"] { --accent: var(--accent-purple); }
+:root[data-accent="pink"] { --accent: var(--accent-pink); }
+:root[data-accent="orange"] { --accent: var(--accent-orange); }
+:root[data-accent="graphite"] { --accent: var(--accent-graphite); }
+
+* { box-sizing: border-box; }
+/* Arc 風のザラザラした質感: 背景のグラデーションの上に、SVG のノイズ (feTurbulence) を薄く重ねる。
+   固定の疑似要素なのでスクロールしても動かず、内容の後ろ (z-index -1) に敷かれる。overlay 合成で色味は変えない */
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n' x='0' y='0' width='100%' height='100%'><feTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/><feComponentTransfer><feFuncR type='linear' slope='3' intercept='-1'/><feFuncG type='linear' slope='3' intercept='-1'/><feFuncB type='linear' slope='3' intercept='-1'/></feComponentTransfer></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 180px 180px;
+  mix-blend-mode: overlay;
+  opacity: .42;
+}
+:where(:root[data-scheme="dark"]) body::before { opacity: .5; }
+/* 背景画像 (設定で選ぶ)。地色のグラデーションの上、ノイズの質感 (z-index -1) の下に敷く。
+   透明度・寄せ・繰り返し・大きさは appearance.js が style に付ける */
+#backdrop { position: fixed; inset: 0; z-index: -2; pointer-events: none; }
+/* display を指定したクラス (.icon-btn など) より hidden 属性を優先する */
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font: 13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  color: var(--fg);
+  background: var(--bg-grad) fixed, var(--bg);
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+/* Chrome の既定の余白 (1px 6px) を消す。小さな丸ボタン (×) で文字が中心からずれるため。余白が必要なボタンは個別に指定している */
+button { font: inherit; color: inherit; padding: 0; }
+a { color: inherit; text-decoration: none; }
+code { font-size: 11px; background: var(--tile); padding: 1px 4px; border-radius: 4px; }
+
+.view { padding: 10px 10px 16px; }
+.view[hidden] { display: none; }
+
+.section-head {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 4px 8px;
+}
+/* セクション見出しはエンボス (レタープレス) 風: 地色に押し込まれた文字。お気に入りの短い名前と同じ作り */
+.section-head h2 {
+  margin: 0; font-size: 12px; font-weight: 800; letter-spacing: .06em;
+  text-transform: uppercase; flex: 1;
+  color: rgb(0 0 0 / .26);
+  text-shadow: 0 1px 0 rgb(255 255 255 / 1), 0 -1px 0 rgb(0 0 0 / .16);
+}
+.head-actions { display: flex; align-items: center; gap: 4px; }
+.icon-btn {
+  width: 24px; height: 24px; border: 0; border-radius: 7px; background: transparent;
+  cursor: pointer; color: var(--muted); display: inline-grid; place-items: center; font-size: 14px;
+}
+.icon-btn:hover { background: var(--tile); color: var(--fg); }
+.icon-btn.active { background: var(--accent); color: #fff; }
+.icon-btn.spin { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.muted { color: var(--muted); font-size: 11px; }
+.hint { color: var(--muted); font-size: 12px; margin: 6px 4px; }
+
+/* ---- ピン留めグリッド (Arc 風) ---- */
+/* タイルは --pin-min 〜 --pin-max の正方形。列数はパネル幅から sidepanel.js (layout.js) が --pin-cols に設定し、
+   タイルが --pin-max を超えない範囲でいちばん大きくなるように敷き詰める */
+.pin-grid {
+  --pin-min: 44px;
+  --pin-max: 56px;
+  --pin-gap: 8px;
+  position: relative; /* タイルの offsetLeft/Top をグリッド基準にする (並べ替えの判定用) */
+  display: grid;
+  grid-template-columns: repeat(var(--pin-cols, 5), 1fr);
+  gap: var(--pin-gap);
+  padding: 2px 2px 6px;
+  min-height: 24px;
+}
+.pin-grid.drop-target { outline: 2px dashed var(--accent); outline-offset: 4px; border-radius: var(--radius); }
+.pin {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius);
+  background: var(--tile);
+  border: 1px solid var(--border);
+  display: grid; place-items: center;
+  cursor: pointer;
+  transition: transform .12s ease, background .12s ease, box-shadow .12s ease;
+}
+.pin:hover { background: var(--tile-hover); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,.08); }
+.pin:active { transform: scale(.96); }
+.pin img { width: 22px; height: 22px; border-radius: 5px; pointer-events: none; }
+.pin .fallback {
+  width: 22px; height: 22px; border-radius: 5px; background: var(--accent); color: #fff;
+  display: grid; place-items: center; font-size: 12px; font-weight: 600;
+}
+.pin.open::after {
+  content: ""; position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%);
+  width: 4px; height: 4px; border-radius: 50%; background: var(--accent);
+}
+/* touch-action: none でトラックパッドやタッチのドラッグをスクロールに取られないようにする (ドラッグは編集モードでなくてもできる) */
+.pin { touch-action: none; }
+.pin-grid.editing .pin { animation: wiggle .35s ease-in-out infinite alternate; cursor: grab; }
+.pin-grid.editing .pin:nth-child(2n) { animation-delay: -.2s; }
+@keyframes wiggle { from { transform: rotate(-1.2deg); } to { transform: rotate(1.2deg); } }
+/* × はタイル自身の角の内側に置く (外にはみ出すと、間隔の狭い隣のタイルの × に見える) */
+/* × は文字ではなく 2 本の線で描く (下の ::before / ::after)。フォントの × は文字枠の中で下寄りに描かれるため、
+   枠を中央に置いても線が 2px ほどずれて見える。丸はタイルの角の外側に置く (内側に寄せると、並べ替えでつかむときに誤って押しやすい) */
+.pin .remove {
+  display: none; position: absolute; top: -6px; right: -6px;
+  width: 18px; height: 18px; border-radius: 50%; border: 0;
+  background: var(--danger); color: #fff; font-size: 0; cursor: pointer;
+}
+.pin-grid.editing .pin .remove { display: block; }
+.cross-icon::before, .cross-icon::after, .pin .remove::before, .pin .remove::after, .tab-close::before, .tab-close::after {
+  content: ""; position: absolute; left: 50%; top: 50%; width: 9px; height: 1.6px; border-radius: 1px;
+  background: currentColor; transform: translate(-50%, -50%) rotate(45deg);
+}
+.cross-icon::after, .pin .remove::after, .tab-close::after { transform: translate(-50%, -50%) rotate(-45deg); }
+/* 並べ替え中: 揺れを止め、つかんだタイルの元の場所は抜け殻として薄く表示し、本体はポインターに付いて動く */
+.pin-grid.reordering .pin { animation: none; cursor: grabbing; }
+.pin-grid.reordering .pin:hover { transform: none; box-shadow: none; }
+.pin.placeholder { opacity: .25; }
+.pin.placeholder > * { visibility: hidden; }
+.pin.reorder-ghost .remove { display: none; }
+/* 並べ替え中にポインターに付いて動く複製 (reorder.js) */
+.reorder-ghost {
+  position: fixed; left: 0; top: 0; margin: 0; z-index: 20; pointer-events: none;
+  animation: none !important; box-shadow: 0 10px 28px rgba(0, 0, 0, .22); cursor: grabbing;
+}
+.pin.add {
+  background: transparent; border: 1.5px dashed var(--border); color: var(--muted); font-size: 18px;
+}
+.pin.add:hover { color: var(--accent); border-color: var(--accent); transform: none; box-shadow: none; }
+
+/* ---- GitHub フォルダ ---- */
+.github { margin-top: 10px; }
+.folder { margin-bottom: 6px; }
+.folder-head {
+  width: 100%; display: flex; align-items: center; gap: 6px;
+  padding: 6px 6px; border: 0; background: transparent; border-radius: 8px; cursor: pointer;
+  text-align: left;
+}
+.folder-head:hover { background: var(--tile); }
+.folder-head .chev { width: 12px; color: var(--muted); display: inline-grid; place-items: center; transition: transform .15s; }
+.folder-head[aria-expanded="false"] .chev { transform: rotate(-90deg); }
+.folder-title { flex: 1; font-weight: 600; }
+.count {
+  min-width: 18px; padding: 0 6px; height: 18px; border-radius: 9px; font-size: 11px;
+  background: var(--tile); color: var(--muted); display: inline-grid; place-items: center;
+}
+.folder[data-folder="reviews"] .count.has { background: var(--danger); color: #fff; }
+.folder-head[aria-expanded="false"] + .pr-list { display: none; }
+
+.pr-list { list-style: none; margin: 0; padding: 0 0 0 4px; }
+/* 本文の列は minmax(0, 1fr)。1fr だけだと列の最小幅が中身 (折り返さないタイトル) の幅になり、長いタイトルでパネルが横にスクロールする */
+.pr {
+  display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 8px; align-items: start;
+  padding: 6px 8px; border-radius: 8px; cursor: pointer;
+}
+.pr { position: relative; }
+.pr:hover { background: var(--tile); }
+/* 開いている PR の × (Today の行の × と同じ見た目)。ホバーのときだけ出る。タブを閉じるだけで項目は残る */
+.pr .pr-close {
+  position: absolute; right: 6px; top: 6px; width: 20px; height: 20px; border: 0; border-radius: 6px;
+  background: transparent; color: var(--muted); cursor: pointer; font-size: 0; visibility: hidden;
+}
+.pr .pr-close::before, .pr .pr-close::after {
+  content: ""; position: absolute; left: 50%; top: 50%; width: 10px; height: 1.5px; border-radius: 1px;
+  background: currentColor; transform: translate(-50%, -50%) rotate(45deg);
+}
+.pr .pr-close::after { transform: translate(-50%, -50%) rotate(-45deg); }
+.pr:hover .pr-close { visibility: visible; }
+.pr .pr-close:hover { background: var(--border); color: var(--fg); }
+.pr.open-tab { background: var(--panel); }
+.pr .status {
+  width: 10px; height: 10px; margin-top: 4px; border-radius: 50%; background: var(--muted);
+  justify-self: center;
+}
+.pr .status.ok { background: var(--ok); }
+.pr .status.fail { background: var(--danger); }
+.pr .status.pending { background: var(--warn); }
+.pr .status.draft { background: transparent; border: 2px solid var(--muted); }
+.pr .title {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500;
+}
+/* × のある行 (開いている PR) は × の幅を常に空ける。Today の行と同じで、長いタイトルの … が × の下に隠れない (ホバーで … の位置も動かない) */
+.pr:has(.pr-close) .title { margin-right: 18px; }
+.pr .meta {
+  display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
+  color: var(--muted); font-size: 11px; margin-top: 1px;
+}
+.pr .meta .repo { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60%; }
+/* 作者名もはみ出さないよう … で切る。ハイフンの無い長いログイン (最大 39 文字) は途中で折り返せず、flex の min-width: auto のままだと縮まない */
+.pr .meta .author { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pr .meta img { width: 14px; height: 14px; border-radius: 50%; }
+.tag {
+  padding: 0 5px; border-radius: 4px; font-size: 10px; line-height: 16px; background: var(--tile);
+}
+.tag.approved { color: var(--ok); }
+.tag.changes { color: var(--danger); }
+.tag.review { color: var(--warn); }
+
+/* エラー文には区切れない長いホスト名が入りうるので、どこでも折り返す (はみ出すとパネルが横にスクロールする) */
+.notice {
+  margin: 0 4px 8px; padding: 8px 10px; border-radius: 8px; font-size: 12px;
+  background: rgba(229, 72, 77, .1); color: var(--danger); overflow-wrap: anywhere;
+}
+.notice .link-btn { color: inherit; font-size: inherit; text-decoration: underline; }
+
+/* ---- 設定 ---- */
+.settings { display: flex; flex-direction: column; gap: 14px; padding: 4px; }
+.settings label { display: flex; flex-direction: column; gap: 4px; }
+.settings label > span { font-weight: 600; font-size: 12px; }
+.settings small { color: var(--muted); font-size: 11px; }
+.settings input[type="text"], .settings input[type="password"], .settings select {
+  font: inherit; padding: 7px 9px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--tile); color: var(--fg); outline: none;
+}
+.settings input:focus, .settings select:focus { border-color: var(--accent); }
+.settings label.check { flex-direction: row; align-items: center; gap: 8px; }
+.settings small.sub { margin: -8px 0 0 24px; }
+.settings label.check span { font-weight: 500; }
+.form-actions { display: flex; align-items: center; gap: 10px; }
+/* 保存結果のエラーにも長いホスト名が入る。flex アイテムの min-width: auto だと縮まないので、0 にしてどこでも折り返す */
+#settings-status { min-width: 0; overflow-wrap: anywhere; }
+/* 設定の「見た目」のまとまり。枠で囲み、後ろの項目と混ざらないようにする */
+.settings-group {
+  display: flex; flex-direction: column; gap: 12px; min-width: 0;
+  margin: 0; padding: 8px 10px 12px; border: 1px solid var(--border); border-radius: 10px;
+}
+.settings-group legend { padding: 0 4px; font-weight: 600; font-size: 12px; color: var(--muted); }
+.settings .field { display: flex; flex-direction: column; gap: 6px; }
+.settings .field-label { font-weight: 600; font-size: 12px; }
+.settings label > span.range-row { display: flex; align-items: center; gap: 8px; font-weight: 400; }
+.range-row input { flex: 1; min-width: 0; accent-color: var(--accent); }
+.range-row output { min-width: 3.5em; text-align: right; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+/* アクセント色の見本。--swatch は appearance.js が var(--accent-<id>) を入れる */
+.swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+.swatch {
+  appearance: none; margin: 0; width: 22px; height: 22px; border-radius: 50%; cursor: pointer;
+  background: var(--swatch); box-shadow: inset 0 0 0 1px rgb(0 0 0 / .12);
+}
+.swatch:checked { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--swatch); }
+.swatch:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+/* 背景画像の寄せ: 3x3 のマス (左上〜右下) */
+.position-grid { display: grid; grid-template-columns: repeat(3, 22px); gap: 4px; }
+.position-cell {
+  appearance: none; margin: 0; width: 22px; height: 22px; border-radius: 5px; cursor: pointer;
+  background: var(--tile); border: 1px solid var(--border);
+}
+.position-cell:hover { background: var(--tile-hover); }
+.position-cell:checked { background: var(--accent); border-color: var(--accent); }
+.position-cell:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.bg-file { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.bg-thumb {
+  flex: none; width: 40px; height: 40px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--tile) center / cover no-repeat;
+}
+.settings .bg-status { color: var(--danger); overflow-wrap: anywhere; }
+.bg-options { display: flex; flex-direction: column; gap: 12px; }
+button.primary {
+  padding: 7px 14px; border: 0; border-radius: 8px; background: var(--accent); color: #fff;
+  cursor: pointer; font-weight: 600;
+}
+button.primary:hover { filter: brightness(1.08); }
+
+/* ---- Arc からインポート ---- */
+.import { margin-top: 22px; padding-top: 14px; border-top: 1px solid var(--border); }
+.import h3 { margin: 0 4px 6px; font-size: 12px; font-weight: 600; }
+.import .hint { margin: 0 4px 10px; }
+.file-btn { display: inline-block; margin: 0 4px; }
+.btn-like {
+  display: inline-block; padding: 6px 12px; border-radius: 8px; cursor: pointer;
+  background: var(--tile); border: 1px solid var(--border); font-weight: 500;
+}
+.btn-like:hover { background: var(--tile-hover); }
+.import-toolbar { display: flex; gap: 10px; margin: 12px 4px 4px; }
+.link-btn { border: 0; background: transparent; color: var(--accent); cursor: pointer; padding: 0; font-size: 12px; }
+.link-btn:hover { text-decoration: underline; }
+.import-group { margin: 8px 0; }
+.import-group > .group-head {
+  display: flex; align-items: center; gap: 8px; padding: 4px 4px; font-weight: 600; cursor: pointer;
+}
+.import-group > .group-head .count { margin-left: auto; }
+.import-item {
+  display: grid; grid-template-columns: 16px 16px 1fr; gap: 8px; align-items: center;
+  padding: 4px 6px 4px 10px; border-radius: 6px; cursor: pointer;
+}
+.import-item:hover { background: var(--tile); }
+.import-item.disabled { opacity: .55; cursor: default; }
+.import-item img { width: 16px; height: 16px; border-radius: 4px; }
+.import-item .text { min-width: 0; }
+.import .hint code { user-select: text; -webkit-user-select: text; cursor: text; }
+#import-note.warn { color: var(--danger); }
+/* 1 行目: フォルダ名は行の 40% まで、残りはタイトル (はみ出す場合はそれぞれ末尾を省略) */
+.import-item .text .t { display: flex; align-items: center; gap: 4px; min-width: 0; white-space: nowrap; }
+.import-item .text .t .path { flex: 0 1 auto; max-width: 40%; overflow: hidden; text-overflow: ellipsis; }
+.import-item .text .t .name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.import-item .text .t .tag { flex: none; }
+.import-item .text .u { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-size: 11px; }
+.import-item .path { color: var(--muted); }
+.import-item .tag { margin-left: 6px; }
+button.primary:disabled { opacity: .5; cursor: default; filter: none; }
+
+/* ---- トースト (短い通知) ---- */
+.toast {
+  position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%);
+  max-width: calc(100% - 28px); padding: 7px 12px; border-radius: 10px; font-size: 12px;
+  background: var(--fg); color: var(--bg); box-shadow: 0 6px 20px rgba(0,0,0,.18);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none;
+}
+
+/* ---- アイコン ---- */
+.fallback { color: #fff; font-weight: 600; display: grid; place-items: center; }
+.import-item .fallback { width: 16px; height: 16px; border-radius: 4px; font-size: 9px; }
+.import-icons { margin: 10px 4px 6px; padding: 8px 10px; border-radius: 8px; background: var(--panel); }
+.import-icons .hint { margin: 0 0 8px; }
+.import-icons .file-btn { margin: 0 8px 0 0; }
+.import-icons code { user-select: text; -webkit-user-select: text; cursor: text; }
+
+.btn-like:focus-visible, .link-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---- ピンの背景色 (アイコンの代表色を淡く敷く) ----
+   値は scripts/test-color.mjs のプレビューと揃えている。
+   同じアイコンのお気に入りが複数あるときは、色相環を 12° ずつ (2 つ目 +12°、3 つ目 -12°、4 つ目 +24° …) と
+   明るさを 4% ずつずらして見分けられるようにする。色の系統は保ち、並ぶと違いが分かる程度。
+   --tint-step は符号付きの段数、--tint-abs はその絶対値、.dup は段数が 0 でないタイル (sidepanel.js が設定) */
+.pin { --tint-step: 0; --tint-abs: 0; --tint-hue: calc(var(--tint-h) + var(--tint-step) * 12); }
+.pin.tinted {
+  background: hsl(var(--tint-hue) calc(var(--tint-s) * 0.85%) calc(91% - var(--tint-abs) * 4%));
+  border-color: hsl(var(--tint-hue) calc(var(--tint-s) * 0.6%) calc(84% - var(--tint-abs) * 4%));
+}
+.pin.tinted:hover { background: hsl(var(--tint-hue) calc(var(--tint-s) * 0.85%) calc(87% - var(--tint-abs) * 4%)); }
+/* 白っぽいアイコンは、ライトテーマで白いタイルに埋もれないよう暗めのタイルに */
+.pin.tone-light { background: hsl(225 10% calc(38% + var(--tint-abs) * 5%)); border-color: hsl(225 10% calc(32% + var(--tint-abs) * 5%)); }
+.pin.tone-light:hover { background: hsl(225 10% calc(33% + var(--tint-abs) * 5%)); }
+/* 色の付かないタイル (灰色のアイコンなど) の同じアイコンは、少し暗くして見分ける */
+.pin.dup:not(.tinted):not(.tone-light):not(.tone-dark) { background: color-mix(in srgb, var(--tile), var(--fg) calc(var(--tint-abs) * 6%)); }
+.pin.dup:not(.tinted):not(.tone-light):not(.tone-dark):hover { background: color-mix(in srgb, var(--tile-hover), var(--fg) calc(var(--tint-abs) * 6%)); }
+:where(:root[data-scheme="dark"]) {
+  .pin.tinted {
+    background: hsl(var(--tint-hue) calc(var(--tint-s) * 0.55%) calc(22% + var(--tint-abs) * 4%));
+    border-color: hsl(var(--tint-hue) calc(var(--tint-s) * 0.5%) calc(30% + var(--tint-abs) * 4%));
+  }
+  .pin.tinted:hover { background: hsl(var(--tint-hue) calc(var(--tint-s) * 0.55%) calc(26% + var(--tint-abs) * 4%)); }
+  /* ダークテーマでは白っぽいアイコンは既定のタイルのままでよい (同じアイコンは少し明るくする) */
+  .pin.tone-light { background: color-mix(in srgb, var(--tile), var(--fg) calc(var(--tint-abs) * 6%)); border-color: var(--border); }
+  .pin.tone-light:hover { background: color-mix(in srgb, var(--tile-hover), var(--fg) calc(var(--tint-abs) * 6%)); }
+  /* 黒っぽいアイコンは、暗いタイルに埋もれないよう明るいタイルに */
+  .pin.tone-dark { background: hsl(225 12% calc(82% - var(--tint-abs) * 5%)); border-color: hsl(225 12% calc(74% - var(--tint-abs) * 5%)); }
+  .pin.tone-dark:hover { background: hsl(225 12% calc(88% - var(--tint-abs) * 5%)); }
+}
+
+/* ---- Today 欄 / アーカイブ ---- */
+.today { margin-top: 12px; padding-top: 8px; border-top: 1px solid var(--border); }
+.today-list { position: relative; display: flex; flex-direction: column; gap: 1px; padding: 0 0 8px; }
+.tab-row {
+  display: grid; grid-template-columns: 16px 1fr auto auto; align-items: center; gap: 8px;
+  height: 32px; padding: 0 6px 0 8px; border-radius: 8px; cursor: default; background: transparent;
+}
+.tab-row:hover { background: var(--tile); }
+.tab-row.active { background: var(--tile-hover); box-shadow: 0 1px 3px rgba(0, 0, 0, .08); }
+.tab-row .tab-icon { width: 16px; height: 16px; border-radius: 3px; pointer-events: none; }
+.tab-row .tab-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tab-row .tab-audio { display: none; color: var(--muted); font-size: 11px; }
+.tab-row.audible .tab-audio { display: inline; }
+.tab-row .tab-close {
+  position: relative; width: 20px; height: 20px; border: 0; border-radius: 6px; background: transparent; color: var(--muted);
+  cursor: pointer; font-size: 0; visibility: hidden;
+}
+.tab-row .tab-close::before, .tab-row .tab-close::after { width: 10px; height: 1.5px; }
+.tab-row:hover .tab-close, .tab-row.active .tab-close { visibility: visible; }
+.tab-row .tab-close:hover { background: var(--border); color: var(--fg); }
+.today-list.reordering .tab-row { cursor: grabbing; }
+.today-list.reordering .tab-row:hover { background: transparent; }
+.tab-row.placeholder { opacity: .3; }
+.tab-row.reorder-ghost { background: var(--tile-hover); }
+/* 分割表示 (split view) のペアは 1 行に。左端のつまみでペアごと動かし、ペインをつかむとその 1 枚だけを引き出す (split.js)。
+   ペインは横に等分して並べる (Chrome が 3 枚以上を許すようになっても同じつくりで並ぶ) */
+.tab-row.split-row { display: flex; gap: 2px; padding: 0 2px 0 0; }
+.tab-row.split-row.active { background: var(--tile); box-shadow: none; }
+.split-grip {
+  flex: none; align-self: stretch; width: 14px; display: grid; place-items: center;
+  color: var(--muted); cursor: grab; opacity: .45; border-radius: 8px 0 0 8px;
+}
+.split-grip .ui-icon { stroke-width: 3; }
+.split-row:hover .split-grip, .split-row.active .split-grip { opacity: 1; }
+.split-pane {
+  flex: 1 1 0; min-width: 0; display: grid; grid-template-columns: 16px 1fr auto auto; align-items: center; gap: 6px;
+  height: 28px; padding: 0 2px 0 6px; border-radius: 6px;
+}
+.split-pane + .split-pane { box-shadow: -2px 0 0 -1px var(--border); }
+.split-pane:hover { background: var(--tile); }
+.split-pane.focused { background: var(--tile-hover); box-shadow: 0 1px 3px rgba(0, 0, 0, .08); }
+.split-pane.pulled { opacity: .3; }
+/* × はペインごと。行のホバーでは出さず、そのペインのホバーか表示中のペインだけ (.tab-row:hover .tab-close と同じ強さで後に書く) */
+.tab-row.split-row .tab-close { visibility: hidden; }
+.split-row .split-pane:hover .tab-close, .split-row .split-pane.focused .tab-close { visibility: visible; }
+/* 行を別の行の真ん中に重ねたときの「分割にする」先。重ねた側の半分を塗る (.today-list.reordering .tab-row:hover より後に書く) */
+.today-list.reordering .tab-row.drop-split-left, .today-list.reordering .tab-row.drop-split-right {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+.today-list.reordering .tab-row.drop-split-left {
+  background: linear-gradient(to right, color-mix(in srgb, var(--accent) 22%, transparent) 50%, transparent 50%);
+}
+.today-list.reordering .tab-row.drop-split-right {
+  background: linear-gradient(to left, color-mix(in srgb, var(--accent) 22%, transparent) 50%, transparent 50%);
+}
+.icon-btn:disabled { opacity: .35; cursor: default; background: transparent; }
+.archive-row { grid-template-columns: 16px 1fr auto; height: auto; min-height: 40px; padding-block: 4px; cursor: pointer; }
+.archive-row .archive-text { min-width: 0; }
+.archive-row .archive-meta { color: var(--muted); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#view-archive .section-head .head-actions { margin-left: auto; }
+.link-btn:disabled { opacity: .4; cursor: default; text-decoration: none; }
+
+/* ---- ピン留めタブの一覧 (フォルダ付き) ---- */
+.pinned { margin-top: 10px; }
+.pinned-list .tab-row { cursor: pointer; }
+.pinned-row.open .tab-title::after {
+  content: ""; display: inline-block; width: 5px; height: 5px; border-radius: 50%;
+  background: var(--accent); margin-left: 6px; vertical-align: middle;
+}
+.folder-row { font-weight: 600; grid-template-columns: 14px 1fr auto auto; }
+.folder-row .chev {
+  width: 14px; height: 20px; border: 0; background: transparent; color: var(--muted); cursor: pointer; padding: 0; font-size: 11px;
+}
+.folder-row .count { margin-right: 2px; }
+.folder-children { padding-left: 14px; }
+.folder-children[hidden] { display: none !important; }
+.folder-children.placeholder { opacity: .3; }
+/* × は編集モードだけ。.tab-row:hover .tab-close (0,3,0) より強くする */
+.pinned-list:not(.editing) .tab-row .tab-close { visibility: hidden; }
+.pinned-list.editing .tab-row .tab-close { visibility: visible; }
+.pinned-list .pinned-node { touch-action: none; }
+.pinned-list.editing .tab-row { animation: wiggle .35s ease-in-out infinite alternate; cursor: grab; }
+.pinned-list.editing .folder-children { animation: none; }
+.pinned-list .today-list.reordering .tab-row { animation: none; }
+/* ドラッグで「フォルダに入れる / 出す」先の表示。入れる先のフォルダ行は枠で囲み、出す先は上下の線で示す */
+.folder-row.drop-into { box-shadow: inset 0 0 0 2px var(--accent); background: var(--tile-hover); }
+.today-list .drop-before { box-shadow: 0 -2px 0 0 var(--accent); }
+.today-list .drop-after { box-shadow: 0 2px 0 0 var(--accent); }
+/* セクションをまたぐドラッグの行き先。末尾 (余白) は一覧 / グリッド全体を点線で囲み、Today 欄へ戻す (解除) は薄い点線 */
+.pinned-list.drop-end, .pin-grid.drop-end { outline: 2px dashed var(--accent); outline-offset: 4px; border-radius: 8px; }
+.today-list.drop-unpin { outline: 2px dashed var(--accent); outline-offset: 4px; border-radius: 8px; }
+.pin.drop-before, .pin.drop-after { position: relative; }
+.pin.drop-before::before, .pin.drop-after::after {
+  content: ""; position: absolute; top: 4px; bottom: 4px; width: 3px; border-radius: 2px; background: var(--accent); z-index: 2;
+}
+.pin.drop-before::before { left: -6px; }
+.pin.drop-after::after { right: -6px; }
+/* その場で名前変更。ピン留めタブはタイトルの位置がそのまま入力欄になり、お気に入りはタイルの下に浮かぶ箱に打つ */
+.rename-input {
+  width: 100%; min-width: 0; box-sizing: border-box; margin: 0; padding: 1px 4px; cursor: text;
+  font: inherit; color: var(--fg); background: var(--tile-hover); border: 1px solid var(--accent); border-radius: 4px; outline: none;
+}
+.pinned-list.editing .tab-row:has(.rename-input) { animation: none; cursor: default; } /* 入力中の行は揺らさない */
+/* 浮かぶ箱は不透明に (下のタイルや行が透けると読めない) */
+.rename-pop { position: fixed; z-index: 30; padding: 4px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 6px 18px rgba(0, 0, 0, .18); }
+.import-target { color: var(--muted); font-weight: 400; font-size: 11px; margin-left: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---- お気に入りの手がかり: タイルの下端に短い名前をうっすら出す ----
+   16px の太字で、収まる最初の数文字だけ (省略記号は付けない)。アイコンの後ろに置き、一部が隠れてもよい (透かしのように)。
+   主張しないよう透明度を高くし、色はタイルの色相に合わせる */
+.pin > img, .pin > .fallback { position: relative; z-index: 1; }
+.pin .hint-label {
+  position: absolute; left: 0; right: 0; bottom: 2px; z-index: 0; padding: 0 3px;
+  font-size: 16px; line-height: 1.1; font-weight: 800; letter-spacing: 0; text-align: center;
+  white-space: nowrap; overflow: hidden; text-overflow: clip; pointer-events: none;
+  /* タイルの縁に近づくほど滑らかに透明にする (収まらない文字は左寄せで右へはみ出すので、右側の帯を長めに) */
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 14%, #000 68%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, #000 14%, #000 68%, transparent 100%);
+  /* エンボス (レタープレス) 風: 文字自体はほぼ透明にし、下に明るい縁、上に暗い縁を付けて表面に押し込まれたように見せる。
+     ライトでもダークでも同じ仕組みで目立ちにくい。暗いタイルでは縁の強さを変える */
+  color: rgb(0 0 0 / .08);
+  text-shadow: 0 1px 0 rgb(255 255 255 / .45), 0 -1px 0 rgb(0 0 0 / .05);
+}
+/* 色付きのタイルでは、文字と縁をタイルと同じ色相の濃淡で作る (色紙に型押ししたような一体感。黒白の縁だと灰色に濁る) */
+.pin.tinted .hint-label {
+  color: hsl(var(--tint-hue) 45% 58% / .22);
+  text-shadow: 0 1px 0 hsl(var(--tint-hue) 70% 99% / .55), 0 -1px 0 hsl(var(--tint-hue) 50% 30% / .1);
+}
+/* 暗いタイル (ライトの白っぽいアイコン用の暗いタイル) */
+.pin.tone-light .hint-label { color: rgb(0 0 0 / .18); text-shadow: 0 1px 0 rgb(255 255 255 / .1), 0 -1px 0 rgb(0 0 0 / .18); }
+:where(:root[data-scheme="dark"]) {
+  .pin .hint-label { color: rgb(0 0 0 / .2); text-shadow: 0 1px 0 rgb(255 255 255 / .09), 0 -1px 0 rgb(0 0 0 / .2); }
+  .pin.tinted .hint-label {
+    color: hsl(var(--tint-hue) 40% 9% / .3);
+    text-shadow: 0 1px 0 hsl(var(--tint-hue) 55% 62% / .15), 0 -1px 0 hsl(var(--tint-hue) 40% 4% / .3);
+  }
+  /* 明るいタイル (ダークの黒っぽいアイコン用の明るいタイル) */
+  .pin.tone-dark .hint-label { color: rgb(0 0 0 / .08); text-shadow: 0 1px 0 rgb(255 255 255 / .4), 0 -1px 0 rgb(0 0 0 / .06); }
+  .pin.tone-light .hint-label { color: rgb(0 0 0 / .2); text-shadow: 0 1px 0 rgb(255 255 255 / .09), 0 -1px 0 rgb(0 0 0 / .2); }
+}
+
+/* ---- UI のアイコン (ui-icons.js の SVG) ---- */
+.ui-icon { display: block; flex: none; }
+.icon-btn .ui-icon { width: 16px; height: 16px; }
+.chev .ui-icon { transition: transform .15s; }
+.folder-row .chev.collapsed .ui-icon { transform: rotate(-90deg); }
+.folder-row .chev { display: inline-grid; place-items: center; }
+.tab-row .tab-audio { display: none; }
+.tab-row.audible .tab-audio, .split-pane.audible .tab-audio { display: inline-grid; place-items: center; }
+
+/* ---- ピン留めタブの分割項目 (split-items-ui.js)。Today 欄の分割行 (.split-row / .split-grip / .split-pane) と同じつくり ---- */
+.pinned-list .split-pane { grid-template-columns: 16px 1fr; }
+.pinned-list .split-row .tab-close { flex: none; align-self: center; }
+.split-pane.open .tab-title::after {
+  content: ""; display: inline-block; width: 5px; height: 5px; border-radius: 50%;
+  background: var(--accent); margin-left: 6px; vertical-align: middle;
+}
+
+/* ---- お気に入りの分割項目 (split-items-ui.js): 1 マスに 2 ペインを横に並べる。タイルに overflow:hidden は付けない (× が角の外にはみ出すため) ---- */
+.pin.split-tile { display: flex; align-items: stretch; }
+.pin-pane { position: relative; z-index: 1; flex: 1 1 0; min-width: 0; display: grid; place-items: center; }
+.pin-pane + .pin-pane { box-shadow: -1px 0 0 var(--border); }
+.pin.split-tile .pin-pane img, .pin.split-tile .pin-pane .fallback { width: 18px; height: 18px; border-radius: 4px; }
+.pin.split-tile .pin-pane .fallback { font-size: 10px; }
+.pin-pane.open::after {
+  content: ""; position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%);
+  width: 4px; height: 4px; border-radius: 50%; background: var(--accent);
+}
+.pin-pane.pulled { opacity: .3; }
+.pin.split-tile .hint-label { font-size: 11px; }
+/* × はペイン (z-index: 1) より前面に出す (出さないと、タイル内側にかかる中央が押せない) */
+.pin.split-tile .remove { z-index: 2; }
+/* タイルを別のタイルの真ん中に重ねたときの「分割にする」先。重ねた側の半分を塗る */
+.pin-grid.reordering .pin.drop-split-left, .pin-grid.reordering .pin.drop-split-right { box-shadow: inset 0 0 0 2px var(--accent); }
+.pin-grid.reordering .pin.drop-split-left { background: linear-gradient(to right, color-mix(in srgb, var(--accent) 28%, transparent) 50%, transparent 50%), var(--tile); }
+.pin-grid.reordering .pin.drop-split-right { background: linear-gradient(to left, color-mix(in srgb, var(--accent) 28%, transparent) 50%, transparent 50%), var(--tile); }
