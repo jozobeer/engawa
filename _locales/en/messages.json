@@ -652,6 +652,9 @@
   "bgSizeAuto": {
     "message": "Original size"
   },
+  "optBgNoise": {
+    "message": "Background texture (noise)"
+  },
   "errBgNotImage": {
     "message": "This file is not an image."
   },

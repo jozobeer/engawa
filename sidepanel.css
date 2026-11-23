@@ -63,6 +63,8 @@ body::before {
   opacity: .42;
 }
 :where(:root[data-scheme="dark"]) body::before { opacity: .5; }
+/* 設定でオフにしたときはノイズ層ごと消す */
+:where(:root[data-noise="off"]) body::before { content: none; }
 /* 背景画像 (設定で選ぶ)。地色のグラデーションの上、ノイズの質感 (z-index -1) の下に敷く。
    透明度・寄せ・繰り返し・大きさは appearance.js が style に付ける */
 #backdrop { position: fixed; inset: 0; z-index: -2; pointer-events: none; }

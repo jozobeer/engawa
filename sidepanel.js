@@ -16,6 +16,7 @@ const DEFAULT_SETTINGS = {
   bgPosition: "center center",
   bgRepeat: "no-repeat",
   bgSize: "cover",       // cover (全体を覆う) / width (幅に合わせる) / auto (原寸)
+  bgNoise: true,         // 背景のグラデーションに重ねるザラザラした質感
 };
 
 let pins = [];
