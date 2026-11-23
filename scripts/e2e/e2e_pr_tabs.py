@@ -23,23 +23,32 @@ try:
     E = lambda expr: c.eval(sp, expr, timeout=60)
     win = E("chrome.windows.getCurrent().then(w => w.id)")
     owned = lambda: E("chrome.storage.session.get('ownedTabs').then(r => r.ownedTabs || {})")
-    tabinfo = lambda tid: E(f"chrome.tabs.get({tid}).then(t => ({{ url: t.url || t.pendingUrl, pinned: t.pinned, active: t.active }})).catch(() => null)")
+    def tabinfo(tid):
+        if tid is None: return None
+        return E(f"chrome.tabs.get({tid}).then(t => ({{ url: t.url || t.pendingUrl, pinned: t.pinned, active: t.active }})).catch(() => null)")
     ntabs = lambda: E("chrome.tabs.query({}).then(ts => ts.length)")
-    setgh = lambda prs: E(f"chrome.storage.local.get('settings').then(r => chrome.storage.local.set({{ settings: {{ ...(r.settings || {{}}), token: 'x', showMine: true, showReviews: true, ghDedicatedTab: true }}, github: {{ mine: {json.dumps(prs)}, reviews: [], fetchedAt: Date.now() }} }}))")
+    setgh = lambda prs: E(f"Promise.all([chrome.storage.sync.get('settings').then(r => chrome.storage.sync.set({{ settings: {{ ...(r.settings || {{}}), showMine: true, showReviews: true, ghDedicatedTab: true }} }})), chrome.storage.local.set({{ githubToken: 'x', github: {{ mine: {json.dumps(prs)}, reviews: [], fetchedAt: Date.now() }} }})])")
     row = lambda url: f"[...document.querySelectorAll('.pr')].find(li => li.querySelector('.repo').textContent.endsWith(' #{url.rsplit('/', 1)[1]}'))"
     def mouse(typ, x, y, b=0, mod=0):
         c.send("Input.dispatchMouseEvent", {"type": typ, "x": x, "y": y, "button": "left", "buttons": b, "clickCount": 1, "modifiers": mod}, session=sp)
     def center(expr):
         return E(f"(() => {{ const r = ({expr}).getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; }})()")
+    def point_on(expr):  # 要素の中心が実際にその要素の内側を指すまで待つ (取得エラーのバナーなどで行の位置がずれるため)
+        x, y = center(expr)
+        for _ in range(25):
+            if E(f"{expr}.contains(document.elementFromPoint({x}, {y}))"): return x, y
+            time.sleep(0.2)
+            x, y = center(expr)
+        return x, y
     def click_pr(url, mod=0):  # 実際のポインター操作で行をクリックする
-        x, y = center(row(url))
+        x, y = point_on(row(url))
         mouse("mouseMoved", x, y); mouse("mousePressed", x, y, 1, mod); mouse("mouseReleased", x, y, 0, mod)
         time.sleep(1.5)
     has_open = lambda url: E(f"{row(url)}.classList.contains('open-tab')")
     today_has = lambda tid: E(f"!!document.querySelector('#today-list .tab-row[data-tab-id=\"{tid}\"]')")
-    def seq(n):  # number の行が描かれるまで待つ
+    def seq(n):  # number の行が描かれて見えるようになるまで待つ (設定の読み込み前はフォルダが隠れ、行の領域が無い)
         for _ in range(30):
-            if E("document.querySelectorAll('.pr').length") == n: return True
+            if E("document.querySelectorAll('.pr').length") == n and not E("document.querySelector('[data-folder=\"mine\"]').hidden"): return True
             time.sleep(0.2)
         return False
 
@@ -91,9 +100,9 @@ try:
     # --- × は A のタブだけ閉じる。行は残る ---
     check("opened PR row has a close button", E(f"!!{row(A)}.querySelector('.pr-close')"))
     check("a PR without a tab has no close button", E("!document.querySelector('.pr:not(.open-tab) .pr-close')"))
-    x, y = center(row(A)); mouse("mouseMoved", x, y); time.sleep(0.3)
+    x, y = point_on(row(A)); mouse("mouseMoved", x, y); time.sleep(0.3)
     check("close button is visible on hover", E(f"getComputedStyle({row(A)}.querySelector('.pr-close')).visibility") == "visible")
-    bx, by = center(f"{row(A)}.querySelector('.pr-close')")
+    bx, by = point_on(f"{row(A)}.querySelector('.pr-close')")
     mouse("mouseMoved", bx, by); mouse("mousePressed", bx, by, 1); mouse("mouseReleased", bx, by, 0)
     time.sleep(1.5)
     check("× closes only A's tab", tabinfo(ta) is None and tabinfo(tb) is not None)
@@ -126,15 +135,15 @@ try:
     check("legacy tab is unpinned and returns to Today", (tabinfo(legacy) or {}).get("pinned") is False and today_has(legacy), json.dumps(tabinfo(legacy)))
 
     # --- フォルダの表示設定: 「自分の PR」を隠すと担当が外れる ---
-    E("chrome.storage.local.get('settings').then(r => chrome.storage.local.set({ settings: { ...r.settings, showMine: false } }))"); time.sleep(0.5)
+    E("chrome.storage.sync.get('settings').then(r => chrome.storage.sync.set({ settings: { ...r.settings, showMine: false } }))"); time.sleep(0.5)
     E("pruneOrphanOwners()"); time.sleep(1)
     check("hiding the folder drops its PR bindings", not any(k.startswith("gh:") for k in owned()), json.dumps(owned()))
-    E("chrome.storage.local.get('settings').then(r => chrome.storage.local.set({ settings: { ...r.settings, showMine: true } }))"); time.sleep(0.5)
+    E("chrome.storage.sync.get('settings').then(r => chrome.storage.sync.set({ settings: { ...r.settings, showMine: true } }))"); time.sleep(0.5)
 
     # --- 設定オフ: 担当を持たず、従来どおり URL 一致のタブを探して開く / 行に × は無い ---
     click_pr(B)
     check("with the setting on, B is bound again", "gh:" + B in owned())
-    E("chrome.storage.local.get('settings').then(r => chrome.storage.local.set({ settings: { ...r.settings, ghDedicatedTab: false } }))"); time.sleep(0.8)
+    E("chrome.storage.sync.get('settings').then(r => chrome.storage.sync.set({ settings: { ...r.settings, ghDedicatedTab: false } }))"); time.sleep(0.8)
     E("pruneOrphanOwners()"); time.sleep(1)
     check("turning the setting off releases PR bindings and hides ×", not any(k.startswith("gh:") for k in owned()) and E("!document.querySelector('.pr .pr-close')"), json.dumps(owned()))
 
@@ -154,8 +163,8 @@ try:
     click_pr(A)
     ta3 = owned().get("gh:" + A)
     n0 = ntabs()
-    x, y = center(row(A)); mouse("mouseMoved", x, y); time.sleep(0.3)
-    bx, by = center(f"{row(A)}.querySelector('.pr-close')")
+    x, y = point_on(row(A)); mouse("mouseMoved", x, y); time.sleep(0.3)
+    bx, by = point_on(f"{row(A)}.querySelector('.pr-close')")
     c.send("Input.dispatchMouseEvent", {"type": "mousePressed", "x": bx, "y": by, "button": "middle", "buttons": 4, "clickCount": 1}, session=sp)
     c.send("Input.dispatchMouseEvent", {"type": "mouseReleased", "x": bx, "y": by, "button": "middle", "buttons": 0, "clickCount": 1}, session=sp)
     time.sleep(1.5)
@@ -168,7 +177,7 @@ try:
     WIDE_LOGIN = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLM"  # ハイフンの無い 39 文字 (ログインの最大長)。途中で折り返せない
     long_pr = {**pr(A, 1), "title": LONG, "repo": "e2e-org/" + "a-really-long-repository-name" * 3}
     long_rv = {**pr(B, 2), "title": LONG, "repo": "e2e-org/" + "x" * 80, "author": WIDE_LOGIN, "reviewDecision": "CHANGES_REQUESTED"}
-    E(f"chrome.storage.local.get('settings').then(r => chrome.storage.local.set({{ settings: {{ ...r.settings, showMine: true, showReviews: true, ghDedicatedTab: true }}, github: {{ mine: {json.dumps([long_pr])}, reviews: {json.dumps([long_rv])}, fetchedAt: Date.now() }} }}))")
+    E(f"Promise.all([chrome.storage.sync.get('settings').then(r => chrome.storage.sync.set({{ settings: {{ ...r.settings, showMine: true, showReviews: true, ghDedicatedTab: true }} }})), chrome.storage.local.set({{ github: {{ mine: {json.dumps([long_pr])}, reviews: {json.dumps([long_rv])}, fetchedAt: Date.now() }} }})])")
     for _ in range(30):  # 件数は直前と同じ 2 行なので、長いタイトルが描かれるのを待つ
         if E(f"[...document.querySelectorAll('.pr .title')].filter(el => el.textContent === {json.dumps(LONG)}).length") == 2: break
         time.sleep(0.2)

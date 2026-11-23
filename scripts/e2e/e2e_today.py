@@ -90,7 +90,7 @@ try:
     E("openOwned('po', 'https://example.com/?owned')"); time.sleep(2.5)
     owned_tab = E("chrome.storage.session.get('ownedTabs').then(r => r.ownedTabs.po)")
     E(f"chrome.tabs.update({t2}, {{ active: true }})"); time.sleep(0.5)
-    E("chrome.storage.local.get('settings').then(r => chrome.storage.local.set({ settings: { ...(r.settings || {}), autoArchiveHours: 0.0003 } }))")
+    E("chrome.storage.sync.get('settings').then(r => chrome.storage.sync.set({ settings: { ...(r.settings || {}), autoArchiveHours: 0.0003 } }))")
     E("chrome.storage.session.set({ archiveGraceFrom: 0 })")
     time.sleep(1.5)
     run_archive()
@@ -98,7 +98,7 @@ try:
     check("auto-archive closes tabs not viewed for the set time", not alive(old1) and not alive(old2))
     check("auto-archive keeps the active, pinned and owned tabs", alive(t2) and alive(pinned_t) and alive(owned_tab), f"{alive(t2)} {alive(pinned_t)} {alive(owned_tab)}")
     check("owned pin tab is not shown in Today", owned_tab not in rows())
-    E("chrome.storage.local.get('settings').then(r => chrome.storage.local.set({ settings: { ...(r.settings || {}), autoArchiveHours: 12 } }))")
+    E("chrome.storage.sync.get('settings').then(r => chrome.storage.sync.set({ settings: { ...(r.settings || {}), autoArchiveHours: 12 } }))")
     E("chrome.storage.session.set({ archiveGraceFrom: Date.now() })")
     run_archive(); time.sleep(1)
     check("grace period protects tabs right after startup/install", alive(t2) and all(alive(x) for x in rows() if x not in (owned_tab,)))
@@ -106,11 +106,11 @@ try:
     # --- メモリセーバーの破棄 (discard) でタブ ID が変わっても担当は保たれ、自動アーカイブに閉じられない ---
     nid = E(f"chrome.tabs.discard({owned_tab}).then(t => t.id)"); time.sleep(1.5)
     check("discard keeps the owned binding on the new tab id", E("chrome.storage.session.get('ownedTabs').then(r => r.ownedTabs.po)") == nid and nid not in rows(), f"new={nid}")
-    E("chrome.storage.local.get('settings').then(r => chrome.storage.local.set({ settings: { ...(r.settings || {}), autoArchiveHours: 0.0003 } }))")
+    E("chrome.storage.sync.get('settings').then(r => chrome.storage.sync.set({ settings: { ...(r.settings || {}), autoArchiveHours: 0.0003 } }))")
     E("chrome.storage.session.set({ archiveGraceFrom: 0 })"); time.sleep(1)
     run_archive(); time.sleep(2)
     check("auto-archive keeps a discarded owned tab", alive(nid))
-    E("chrome.storage.local.get('settings').then(r => chrome.storage.local.set({ settings: { ...(r.settings || {}), autoArchiveHours: 12 } }))")
+    E("chrome.storage.sync.get('settings').then(r => chrome.storage.sync.set({ settings: { ...(r.settings || {}), autoArchiveHours: 12 } }))")
     E("chrome.storage.session.set({ archiveGraceFrom: Date.now() })"); time.sleep(0.5)
 
     # --- beforeunload で閉じられないタブが 1 件あっても、ほかのタブは閉じて記録され、応答も返る ---

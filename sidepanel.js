@@ -1,6 +1,8 @@
 // サイドパネル UI: ピン留めグリッドと GitHub ライブフォルダ
 
 const $ = (sel) => document.querySelector(sel);
+// settings は chrome.storage.sync (端末間で同期)。token (GitHub PAT) だけは同期しない約束
+// (README) なので、chrome.storage.local の githubToken に分け、読み込みでここに合流させる
 const DEFAULT_SETTINGS = {
   host: "github.com", token: "", intervalMin: 3,
   showMine: true, showReviews: true, includeTeamRequests: true, maxPins: 20,
@@ -28,9 +30,40 @@ let openTabs = [];
 let pinCurrentTitle = ""; // 「現在のタブをピン留め」+ 実際のショートカット (applyShortcutLabels で設定)
 
 // ---------- 共通 ----------
+// 旧版の local.settings からの一度きりの移行: sync が空なら local を seed (token 抜き)、
+// 両方あれば sync を正とする。移したあと local.settings は消す。何度呼んでもよい
+// (background.js にも同じものがある。SW は別コンテキストなので複製)
+async function migrateSettings() {
+  const [{ settings: synced }, local] = await Promise.all([
+    chrome.storage.sync.get("settings"),
+    chrome.storage.local.get(["settings", "githubToken"]),
+  ]);
+  const legacy = local.settings;
+  if (!legacy) return;
+  if (synced === undefined) {
+    const seeded = { ...legacy };
+    delete seeded.token;
+    await chrome.storage.sync.set({ settings: seeded });
+  }
+  if (legacy.token && local.githubToken === undefined) {
+    await chrome.storage.local.set({ githubToken: legacy.token });
+  }
+  await chrome.storage.local.remove("settings");
+}
+
 async function loadSettings() {
-  const { settings: s } = await chrome.storage.local.get("settings");
-  settings = { ...DEFAULT_SETTINGS, ...(s || {}) };
+  await migrateSettings();
+  const [{ settings: s }, { githubToken }] = await Promise.all([
+    chrome.storage.sync.get("settings"),
+    chrome.storage.local.get("githubToken"),
+  ]);
+  settings = { ...DEFAULT_SETTINGS, ...(s || {}), token: githubToken || "" };
+}
+
+// sync に書く settings (token は同期しないので外す)
+function syncedSettings() {
+  const { token: _token, ...rest } = settings;
+  return rest;
 }
 
 function originOf(url) {
@@ -1073,7 +1106,10 @@ async function saveSettings(e) {
     pinHints: $("#in-pin-hints").checked,
     autoArchiveHours: Number($("#in-auto-archive").value),
   };
-  await chrome.storage.local.set({ settings });
+  await Promise.all([
+    chrome.storage.sync.set({ settings: syncedSettings() }),
+    chrome.storage.local.set({ githubToken: settings.token }),
+  ]);
   if (pinnedChanged) await applyPinnedSetting(pinOwnedTabs);
   status.textContent = t("statusSaved");
   await refreshOpenTabs();
@@ -1372,7 +1408,7 @@ async function runImport() {
       for (const c of toAdd) if (c.icon) icons[c.url] = c.icon;
       if (pins.length > settings.maxPins) {
         settings = { ...settings, maxPins: roundUpLimit(pins.length) };
-        await chrome.storage.local.set({ settings });
+        await chrome.storage.sync.set({ settings: syncedSettings() });
         syncMaxPinsSelect(); // 設定フォームは表示中なので、次の「保存」で上限が戻らないようセレクトも更新する
       }
     }
@@ -1456,10 +1492,10 @@ async function init() {
       renderGitHub();
       await pruneOrphanOwners(); // 一覧から消えた PR (マージ・クローズ等) の担当を外す。タブは閉じず Today に戻る
     }
-    if (area === "local" && changes.settings) {
+    if ((area === "sync" && changes.settings) || (area === "local" && changes.githubToken)) {
       await loadSettings();
       applyAppearance(settings);
-      if (!$("#view-settings").hidden) {
+      if (changes.settings && !$("#view-settings").hidden) {
         // 見た目はその場で保存するので settings はよく書き換わる。上限が変わったときだけ合わせ、未保存の選択を戻さない
         const maxPinsOf = (s) => ({ ...DEFAULT_SETTINGS, ...(s || {}) }).maxPins;
         if (maxPinsOf(changes.settings.oldValue) !== maxPinsOf(changes.settings.newValue)) syncMaxPinsSelect();

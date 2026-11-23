@@ -14,9 +14,34 @@ const DEFAULT_SETTINGS = {
   autoArchiveHours: 12,
 };
 
+// settings は chrome.storage.sync (端末間で同期)。token (GitHub PAT) だけは同期しない約束なので、
+// chrome.storage.local の githubToken に分けて持つ。旧版の local.settings からの一度きりの移行:
+// sync が空なら local を seed (token 抜き)、両方あれば sync を正とする (sidepanel.js と同じ。SW は別コンテキストなので複製)
+async function migrateSettings() {
+  const [{ settings: synced }, local] = await Promise.all([
+    chrome.storage.sync.get("settings"),
+    chrome.storage.local.get(["settings", "githubToken"]),
+  ]);
+  const legacy = local.settings;
+  if (!legacy) return;
+  if (synced === undefined) {
+    const seeded = { ...legacy };
+    delete seeded.token;
+    await chrome.storage.sync.set({ settings: seeded });
+  }
+  if (legacy.token && local.githubToken === undefined) {
+    await chrome.storage.local.set({ githubToken: legacy.token });
+  }
+  await chrome.storage.local.remove("settings");
+}
+
 async function getSettings() {
-  const { settings } = await chrome.storage.local.get("settings");
-  return { ...DEFAULT_SETTINGS, ...(settings || {}) };
+  await migrateSettings();
+  const [{ settings }, { githubToken }] = await Promise.all([
+    chrome.storage.sync.get("settings"),
+    chrome.storage.local.get("githubToken"),
+  ]);
+  return { ...DEFAULT_SETTINGS, ...(settings || {}), token: githubToken || "" };
 }
 
 function graphqlEndpoint(host) {
@@ -258,8 +283,9 @@ function onlyAppearanceChanged({ oldValue = {}, newValue = {} }) {
 }
 
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area !== "local" || !changes.settings) return;
-  if (onlyAppearanceChanged(changes.settings)) return;
+  const settingsChanged = area === "sync" && changes.settings && !onlyAppearanceChanged(changes.settings);
+  const tokenChanged = area === "local" && changes.githubToken;
+  if (!settingsChanged && !tokenChanged) return;
   scheduleAlarm();
   refreshGitHub();
 });
@@ -432,7 +458,7 @@ chrome.storage.onChanged.addListener(async (changes, area) => {
   }
   // 削除されたお気に入り・ピン留めタブ・一覧から消えた PR の記録を消す (pins / pinnedTabs の全 ID と、見えている PR を正とする)。
   // 旧 "github" の記録もここで消える
-  if ((area === "sync" && (changes.pins || changes.pinnedTabs)) || (area === "local" && (changes.github || changes.settings))) {
+  if ((area === "sync" && (changes.pins || changes.pinnedTabs || changes.settings)) || (area === "local" && (changes.github || changes.githubToken))) {
     await migrateLegacyOnce(); // ownedUrls.github を消す前に旧固定タブを移行する
     const [all, s, { github: gh = {} }] = await Promise.all([
       chrome.storage.sync.get(["pins", "pinnedTabs"]), getSettings(), chrome.storage.local.get("github"),
@@ -582,7 +608,7 @@ async function autoArchive() {
 }
 
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === "local" && changes.settings) {
+  if (area === "sync" && changes.settings) {
     const before = changes.settings.oldValue?.autoArchiveHours;
     const after = changes.settings.newValue?.autoArchiveHours;
     if (before !== after) scheduleArchiveAlarm();

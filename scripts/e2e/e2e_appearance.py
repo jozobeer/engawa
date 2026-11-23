@@ -48,7 +48,7 @@ try:
     accent_attr = lambda s=sp: E("document.documentElement.dataset.accent || ''", s)
     var = lambda name: E(f"getComputedStyle(document.documentElement).getPropertyValue('{name}').trim()")
     primary_bg = lambda: E("getComputedStyle(document.querySelector('button.primary')).backgroundColor")
-    stored = lambda: E("chrome.storage.local.get('settings').then(r => r.settings || {})")
+    stored = lambda: E("chrome.storage.sync.get('settings').then(r => r.settings || {})")
     stored_image = lambda: E("chrome.storage.local.get('backgroundImage').then(r => r.backgroundImage ?? null)")
     backdrop = lambda: E("(() => { const el = document.querySelector('#backdrop'), s = el.style; return { hidden: el.hidden, image: s.backgroundImage.slice(0, 30), opacity: s.opacity, position: s.backgroundPosition, repeat: s.backgroundRepeat, size: s.backgroundSize }; })()")
     def choose(sel, value):  # select の値を変えて change を送る (ユーザーの操作と同じ経路)
@@ -298,7 +298,7 @@ try:
     check("saving the form still refetches GitHub", E("window.__ghWrites") > 0, E("window.__ghWrites"))
 
     # --- 壊れた値は既定に戻す ---
-    E("chrome.storage.local.get('settings').then(r => chrome.storage.local.set({ settings: { ...r.settings, theme: 'neon', tint: 'neon', accent: 'x', bgTransparency: 'abc', bgPosition: 'nowhere', bgRepeat: 1, bgSize: null, bgScale: 'wide', bgNoise: 'loud' } }))"); time.sleep(0.8)
+    E("chrome.storage.sync.get('settings').then(r => chrome.storage.sync.set({ settings: { ...r.settings, theme: 'neon', tint: 'neon', accent: 'x', bgTransparency: 'abc', bgPosition: 'nowhere', bgRepeat: 1, bgSize: null, bgScale: 'wide', bgNoise: 'loud' } }))"); time.sleep(0.8)
     check("broken values fall back to the defaults", scheme() == "light" and accent_attr() == "" and tint_attr() == "", f"{scheme()} {accent_attr()} {tint_attr()}")
     E("showSettings()"); time.sleep(0.3)
     check("the settings show the defaults for broken values", E("[document.querySelector('#in-theme').value, document.querySelector('#in-tint input:checked')?.value, document.querySelector('#in-bg-transparency').value, document.querySelector('#in-bg-size').value, document.querySelector('#in-bg-noise').checked, document.querySelector('#in-bg-scale').value, document.querySelector('#in-bg-scale').disabled].join()") == "auto,neutral,60,cover,true,100,true")

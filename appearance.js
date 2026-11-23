@@ -186,8 +186,10 @@ function saveAppearance(patch) {
   applyAppearance(settings);
   // 書き込みは直列にする (前の書き込みの失敗は次の書き込みを止めない)
   appearanceWrites = appearanceWrites.catch(() => {}).then(async () => {
-    const { settings: stored } = await chrome.storage.local.get("settings");
-    await chrome.storage.local.set({ settings: { ...DEFAULT_SETTINGS, ...(stored || {}), ...patch } });
+    const { settings: stored } = await chrome.storage.sync.get("settings");
+    const next = { ...DEFAULT_SETTINGS, ...(stored || {}), ...patch };
+    delete next.token; // token は同期しない (storage.local の githubToken)
+    await chrome.storage.sync.set({ settings: next });
   });
   return appearanceWrites;
 }

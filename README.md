@@ -46,8 +46,8 @@ The UI (side panel, extension name, context menus, tooltips) follows Chrome's di
    - fine-grained token: Pull requests **Read** on the target repositories
 4. Press **Save & refresh**. For GHES, accept the host-access permission dialog
 
-The token is stored in `chrome.storage.local` and never leaves this Chrome profile.
-Favorites and pinned tabs are stored in `chrome.storage.sync` and follow your Google account across Chrome installs.
+The token is stored under a separate `githubToken` key in `chrome.storage.local` and never leaves this Chrome profile.
+Favorites, pinned tabs and your settings are stored in `chrome.storage.sync` and follow your Google account across Chrome installs — the token is the one setting deliberately kept out of sync.
 
 ## Usage
 
@@ -214,6 +214,7 @@ python3 scripts/e2e/e2e_pr_tabs.py "$PWD"  # dedicated tab per GitHub PR (no net
 python3 scripts/e2e/e2e_split.py "$PWD"    # Today splits: single-row display, drag split/extract/pair-move, pair cleanup (no network, Chrome 155+)
 python3 scripts/e2e/e2e_split_items.py "$PWD"  # pinned split items: Today round-trips, combine/extract, click-reopen, races (no network, Chrome 155+)
 python3 scripts/e2e/e2e_appearance.py "$PWD"   # theme, sidebar color, accent color, background image (no network)
+python3 scripts/e2e/e2e_settings_sync.py "$PWD"  # settings sync area, local-only token, legacy migration (no network)
 ```
 
 GitHub data comes from the GraphQL `search` API:
