@@ -95,7 +95,7 @@
   --tile: hsl(32 30% 92% / .09);
   --tile-hover: hsl(32 28% 92% / .15);
   --fg: hsl(32 20% 91%);
-  --muted: hsl(30 12% 64%);
+  --muted: hsl(30 12% 65%);
   --border: hsl(32 32% 92% / .09);
 }
 :root[data-tint="matcha"] {
@@ -115,7 +115,7 @@
   --tile: hsl(96 20% 92% / .09);
   --tile-hover: hsl(96 20% 92% / .15);
   --fg: hsl(96 14% 90%);
-  --muted: hsl(96 9% 63%);
+  --muted: hsl(96 9% 66%);
   --border: hsl(96 22% 92% / .09);
 }
 :root[data-tint="sora"] {

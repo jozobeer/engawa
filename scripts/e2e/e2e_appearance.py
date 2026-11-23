@@ -139,15 +139,30 @@ try:
     def contrast(a, b):
         hi, lo = sorted((lum(a), lum(b)), reverse=True)
         return (hi + 0.05) / (lo + 0.05)
+    def rgba_of(color):  # "rgb(...)" / "rgba(...)" -> ([r,g,b], alpha)
+        v = [float(x) for x in re.search(r"rgba?\(([^)]*)\)", color).group(1).split(",")[:4]]
+        return v[:3], (v[3] if len(v) > 3 else 1.0)
+    def over(top, base):  # 半透明色 top を不透明色 base に重ねたときの見た目色
+        (r, g, b), a = top
+        return [a * x + (1 - a) * y for x, y in zip((r, g, b), base)]
+    def as_rgb(rgb):  # contrast() は文字列を読むので整数へ丸めて戻す
+        return "rgb(%d, %d, %d)" % tuple(round(x) for x in rgb)
     body_fg = lambda: E("getComputedStyle(document.body).color")
     body_bg = lambda: E("getComputedStyle(document.body).backgroundColor")
     muted_fg = lambda: E("getComputedStyle(document.querySelector('.muted')).color")
+    count_fg = lambda: E("getComputedStyle(document.querySelector('.count')).color")
+    count_bg = lambda: E("getComputedStyle(document.querySelector('.count')).backgroundColor")
+    grad_stops = lambda: re.findall(r"rgba?\([^)]*\)", E("getComputedStyle(document.body).backgroundImage"))
     for tname in ["sakura", "amber", "matcha", "sora", "fuji", "grape"]:
         E(f"document.querySelector('#in-tint input[value={tname}]').click()"); time.sleep(0.4)
         for scheme_name in ["light", "dark"]:
             media(scheme_name); time.sleep(0.3)
             fg_c, muted_c = contrast(body_fg(), body_bg()), contrast(muted_fg(), body_bg())
             check(f"{tname} stays readable in {scheme_name}", fg_c >= 4.5 and muted_c >= 4.0, f"fg={fg_c:.2f} muted={muted_c:.2f}")
+            # .count は hover した .folder-head の面 (--tile) の上に自分の面 (--tile) をさらに重ねる。
+            # グラデーションのどの位置にあっても読めるよう、両端のストップで測る
+            count_c = min(contrast(count_fg(), as_rgb(over(rgba_of(count_bg()), over(rgba_of(count_bg()), rgba_of(stop)[0])))) for stop in grad_stops())
+            check(f"{tname} keeps the count readable on a hovered folder head in {scheme_name}", count_c >= 4.0, f"count={count_c:.2f}")
     media("light"); time.sleep(0.3)
     E("document.querySelector('#in-tint input[value=neutral]').click()"); time.sleep(0.5)
     check("back to neutral removes data-tint and restores the surfaces", tint_attr() == "" and var("--bg") == "#eef0f6" and var("--fg") == "#1f2330", f"{tint_attr()} {var('--bg')}")
