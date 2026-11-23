@@ -22,7 +22,7 @@ python3 scripts/e2e/<suite>.py "$PWD"                    # ヘッドレス Chrom
 
 E2E は使い捨てプロファイルのヘッドレス Chrome を `--remote-debugging-pipe` で起動する (`scripts/e2e/cdp.py`)。
 サンドボックス内では Chrome が起動できないので、サンドボックス外で実行する。普段使いの Chrome には触れない。
-`e2e.py` / `e2e_refresh.py` / `e2e_owned.py` / `e2e_today.py` は github.com への接続が必要。`e2e_reorder.py` / `e2e_pinned.py` / `e2e_dnd.py` / `e2e_pr_tabs.py` / `e2e_split.py` / `e2e_split_items.py` / `e2e_appearance.py` は不要 (`e2e_split.py` と `e2e_split_items.py` は Chrome 155 以降の分割表示 API を使う。後者は Part を選べる: `python3 scripts/e2e/e2e_split_items.py "$PWD" B C`)。E2E は 1 本ずつ順に流す (並行すると遅くなり、タイミング系が落ちる)。
+`e2e.py` / `e2e_refresh.py` / `e2e_owned.py` / `e2e_today.py` は github.com への接続が必要。`e2e_reorder.py` / `e2e_pinned.py` / `e2e_dnd.py` / `e2e_pr_tabs.py` / `e2e_split.py` / `e2e_split_items.py` / `e2e_appearance.py` / `e2e_settings_sync.py` は不要 (`e2e_split.py` と `e2e_split_items.py` は Chrome 155 以降の分割表示 API を使う。後者は Part を選べる: `python3 scripts/e2e/e2e_split_items.py "$PWD" B C`)。E2E は 1 本ずつ順に流す (並行すると遅くなり、タイミング系が落ちる)。
 UI を変えたら、該当するスイートを全部通してからコミットする。新機能には E2E を足す。
 
 ## 注意点

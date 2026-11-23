@@ -39,11 +39,12 @@ paths: ["*.js", "sidepanel.html", "sidepanel.css"]
 
 ## 保存先
 
-- `chrome.storage.sync`: `pins` (お気に入り)、`pinnedTabs` (ピン留めタブのツリー。フォルダの中にも置ける分割項目は `{type:"split", id, children:[tab, tab]}` で、`split.id` は担当先ではなく DOM のキーと並べ替えの単位)。1 項目 8 KB (`QUOTA_BYTES_PER_ITEM`) を超えると `set` が拒否される。書く前に `pinsFit` / `pinnedTabsFit` で確かめ、失敗時は元に戻して `pinStorageFull` を出す
-- `chrome.storage.local`: `settings` (見た目の `theme` / `tint` / `accent` / `bg*` も含む)、`backgroundImage` (背景画像の data URL。数 MB になりうるので `settings` とは別のキー)、`icons` (URL → data URL)、`ownedUrls`、`ownedPinned`、`archive`、`folderCollapsed`
+- `chrome.storage.sync`: `pins` (お気に入り)、`pinnedTabs` (ピン留めタブのツリー。フォルダの中にも置ける分割項目は `{type:"split", id, children:[tab, tab]}` で、`split.id` は担当先ではなく DOM のキーと並べ替えの単位)、`settings` (見た目の `theme` / `tint` / `accent` / `bg*` も含む。`token` だけは含めない)。1 項目 8 KB (`QUOTA_BYTES_PER_ITEM`) を超えると `set` が拒否される。書く前に `pinsFit` / `pinnedTabsFit` で確かめ、失敗時は元に戻して `pinStorageFull` を出す
+- `chrome.storage.local`: `githubToken` (GitHub PAT。「この Chrome プロファイルから出さない」約束があるので、同期する `settings` とは別のキーに置き、読み込みで `settings.token` に合流させる)、`backgroundImage` (背景画像の data URL。数 MB になりうるので `settings` とは別のキー)、`icons` (URL → data URL)、`ownedUrls`、`ownedPinned`、`archive`、`folderCollapsed`、`folderState`
 - `chrome.storage.session`: `ownedTabs`、`archiveGraceFrom`、`archiveSkip` (beforeunload で閉じられなかったタブの lastAccessed)
+- 旧版の `storage.local.settings` は `migrateSettings()` (`loadSettings` / `getSettings` から走る冪等の移行。sidepanel.js / background.js に同じもの) が一度きり片付ける: sync が空なら local を seed (token 抜き)、両方あれば sync を正とし、`local.settings` は消す
 - 自動アーカイブはタブごとに並列に閉じて閉じた時点で記録し、応答は 5 秒で打ち切る。`tabs.remove` は beforeunload をキャンセルされると永久に解決しないため
-- `storage.local.settings` は見た目の設定を変えるたびに書かれる。`settings` の `onChanged` で重い処理 (GitHub の取り直し、アラームの張り直し) や入力欄の同期をするときは、関係するキーの `oldValue` / `newValue` を比べる (background.js の `onlyAppearanceChanged`、自動アーカイブの `autoArchiveHours` と同じ形)
+- `storage.sync.settings` は見た目の設定を変えるたびに書かれる。`settings` の `onChanged` で重い処理 (GitHub の取り直し、アラームの張り直し) や入力欄の同期をするときは、関係するキーの `oldValue` / `newValue` を比べる (background.js の `onlyAppearanceChanged`、自動アーカイブの `autoArchiveHours` と同じ形)
 - 1 つのキーの書き手は 1 か所に寄せる (`ownedUrls` と `archive` は background だけ)。read-modify-write は直列化する
 
 ## アイコン

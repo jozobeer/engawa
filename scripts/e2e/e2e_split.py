@@ -177,13 +177,13 @@ try:
     t7 = mk("https://split-7.invalid/"); t8 = mk("https://split-8.invalid/"); time.sleep(0.8)
     E(f"chrome.tabs.createSplit([{t7}, {t8}])")
     E(f"chrome.tabs.update({t3}, {{ active: true }})"); time.sleep(0.5)
-    E("chrome.storage.local.get('settings').then(r => chrome.storage.local.set({ settings: { ...(r.settings || {}), autoArchiveHours: 0.0003 } }))")
+    E("chrome.storage.sync.get('settings').then(r => chrome.storage.sync.set({ settings: { ...(r.settings || {}), autoArchiveHours: 0.0003 } }))")
     E("chrome.storage.session.set({ archiveGraceFrom: 0 })"); time.sleep(1.5)
     E("chrome.runtime.sendMessage({ type: 'archive-run' })"); time.sleep(2.5)
     left = order()
     check("auto-archive never closes the visible split's other pane", t3 in left and t4 in left and paired(t3, t4), json.dumps(strip()))
     check("auto-archive closes an unseen split as a pair", t7 not in left and t8 not in left, json.dumps(strip()))
-    E("chrome.storage.local.get('settings').then(r => chrome.storage.local.set({ settings: { ...(r.settings || {}), autoArchiveHours: 12 } }))")
+    E("chrome.storage.sync.get('settings').then(r => chrome.storage.sync.set({ settings: { ...(r.settings || {}), autoArchiveHours: 12 } }))")
     E("chrome.storage.session.set({ archiveGraceFrom: Date.now() })")
 
     # --- 引き出したペインはピン留めタブにできる (分割を解いて担当タブに) ---

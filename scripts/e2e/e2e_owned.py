@@ -24,7 +24,7 @@ try:
 
     # --- PR の担当先は「一覧に見えている PR」だけなので、トークンと PR 1 件を storage に置いておく (ネットワークは使わない) ---
     GH = "gh:" + PR
-    E(f"chrome.storage.local.set({{ settings: {{ token: 'x' }}, github: {{ mine: [{{ url: '{PR}', title: 't', repo: 'cli/cli', number: 1, updatedAt: new Date().toISOString(), ci: null }}], reviews: [], fetchedAt: Date.now() }} }})")
+    E(f"chrome.storage.local.set({{ githubToken: 'x', github: {{ mine: [{{ url: '{PR}', title: 't', repo: 'cli/cli', number: 1, updatedAt: new Date().toISOString(), ci: null }}], reviews: [], fetchedAt: Date.now() }} }})")
     time.sleep(1.5)
 
     # --- 自分で固定した github.com/notifications を GitHub 担当が奪わない ---
@@ -100,7 +100,7 @@ try:
     check("extension-pinned tab is unpinned when its pin is removed", (tab(p1) or {}).get("pinned") is False, json.dumps(tab(p1)))
 
     # --- トークンが無くなると PR の担当は外れる ---
-    E("chrome.storage.local.set({ settings: { token: '' } })")
+    E("chrome.storage.local.set({ githubToken: '' })")
     time.sleep(1.5)
     check("PR binding is released once the token is gone", GH not in owned(), json.dumps(owned()))
 
