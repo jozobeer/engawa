@@ -652,6 +652,9 @@
   "bgSizeAuto": {
     "message": "Original size"
   },
+  "labelBgScale": {
+    "message": "Scale (original size)"
+  },
   "optBgNoise": {
     "message": "Background texture (noise)"
   },

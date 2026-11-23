@@ -148,6 +148,22 @@ try:
     choose("#in-bg-size", "auto")
     check("size: original", backdrop()["size"] == "auto", backdrop()["size"])
 
+    # --- 原寸の拡大率 (issue #4): 「原寸」のときだけ効き、繰り返しの有無にかかわらず効く ---
+    # 選んである SMALL は 32x32 → 200% で background-size は 64px auto になる
+    check("the scale slider is enabled for original size", not E("document.querySelector('#in-bg-scale').disabled"))
+    E("(() => { const r = document.querySelector('#in-bg-scale'); r.value = '200'; r.dispatchEvent(new Event('input', { bubbles: true })); })()"); time.sleep(0.3)
+    check("dragging the scale slider previews without saving", backdrop()["size"] == "64px auto" and stored().get("bgScale", 100) == 100 and E("document.querySelector('#out-bg-scale').value") == "200%", f"{backdrop()['size']} {stored().get('bgScale')}")
+    E("document.querySelector('#in-bg-scale').dispatchEvent(new Event('change', { bubbles: true }))"); time.sleep(0.5)
+    check("releasing the scale slider saves it", stored().get("bgScale") == 200, json.dumps(stored().get("bgScale")))
+    check("the scale applies to tiles (repeat-x is set)", backdrop()["size"] == "64px auto" and backdrop()["repeat"] == "repeat-x", json.dumps(backdrop()))
+    choose("#in-bg-repeat", "no-repeat")
+    check("the scale applies without repeat too", backdrop()["size"] == "64px auto", backdrop()["size"])
+    choose("#in-bg-size", "width")
+    check("the scale slider is disabled for non-original sizes", E("document.querySelector('#in-bg-scale').disabled") and backdrop()["size"] == "100% auto", f"{backdrop()['size']} disabled={E('document.querySelector(\"#in-bg-scale\").disabled')}")
+    choose("#in-bg-size", "auto")
+    check("choosing original size applies the scale again", backdrop()["size"] == "64px auto" and not E("document.querySelector('#in-bg-scale').disabled"), backdrop()["size"])
+    choose("#in-bg-repeat", "repeat")
+
     # --- 大きい画像は長辺 2560px の WebP に縮めて保存する ---
     pick_file(LARGE)
     check("a large image is shrunk to WebP", wait("chrome.storage.local.get('backgroundImage').then(r => (r.backgroundImage || '').startsWith('data:image/webp'))", 40))
@@ -183,6 +199,8 @@ try:
     tid2, sp2 = c.open(URL)
     media("light", sp2); time.sleep(1.5)
     check("another panel starts with the same image and alignment", E("document.querySelector('#backdrop').style.backgroundPosition", sp2) == "right bottom" and not E("document.querySelector('#backdrop').hidden", sp2))
+    # 保存済みの拡大率 200% が別パネルでも効く (縮めた LARGE_SVG の WebP は幅 2560px → 5120px auto)
+    check("another panel applies the stored scale", E("document.querySelector('#backdrop').style.backgroundSize", sp2) == "5120px auto", E("document.querySelector('#backdrop').style.backgroundSize", sp2))
     saved_max = stored().get("maxPins")
     unsaved_max = next(v for v in ["12", "16", "20", "24"] if v != str(saved_max))
     choose("#in-maxpins", unsaved_max)
@@ -212,10 +230,10 @@ try:
     check("saving the form still refetches GitHub", E("window.__ghWrites") > 0, E("window.__ghWrites"))
 
     # --- 壊れた値は既定に戻す ---
-    E("chrome.storage.local.get('settings').then(r => chrome.storage.local.set({ settings: { ...r.settings, theme: 'neon', accent: 'x', bgTransparency: 'abc', bgPosition: 'nowhere', bgRepeat: 1, bgSize: null, bgNoise: 'loud' } }))"); time.sleep(0.8)
+    E("chrome.storage.local.get('settings').then(r => chrome.storage.local.set({ settings: { ...r.settings, theme: 'neon', accent: 'x', bgTransparency: 'abc', bgPosition: 'nowhere', bgRepeat: 1, bgSize: null, bgScale: 'wide', bgNoise: 'loud' } }))"); time.sleep(0.8)
     check("broken values fall back to the defaults", scheme() == "light" and accent_attr() == "", f"{scheme()} {accent_attr()}")
     E("showSettings()"); time.sleep(0.3)
-    check("the settings show the defaults for broken values", E("[document.querySelector('#in-theme').value, document.querySelector('#in-bg-transparency').value, document.querySelector('#in-bg-size').value, document.querySelector('#in-bg-noise').checked].join()") == "auto,60,cover,true")
+    check("the settings show the defaults for broken values", E("[document.querySelector('#in-theme').value, document.querySelector('#in-bg-transparency').value, document.querySelector('#in-bg-size').value, document.querySelector('#in-bg-noise').checked, document.querySelector('#in-bg-scale').value, document.querySelector('#in-bg-scale').disabled].join()") == "auto,60,cover,true,100,true")
 
     exc = [e for e in c.events if e.get("method") == "Runtime.exceptionThrown"]
     check("no uncaught exceptions", not exc, json.dumps(exc[:1])[:300])
