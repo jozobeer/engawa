@@ -21,6 +21,7 @@ def write_png(path, w, h, row, level):
 
 tmp = tempfile.mkdtemp(prefix="arcsp-e2e-img-", dir=os.environ.get("TMPDIR"))
 SMALL = write_png(os.path.join(tmp, "small.png"), 32, 32, lambda y: bytes([y * 8 % 256, 120, 200]) * 32, 9)
+TINY = write_png(os.path.join(tmp, "tiny.png"), 4, 4, lambda y: bytes([200, y * 60 % 256, 80]) * 4, 9)  # 10% だと幅 0.4px: 丸めて 0px になるかの検査用
 # 1.5 MB を超える (圧縮しない) なめらかな画像: 縮めて WebP にする経路を通る
 LARGE = write_png(os.path.join(tmp, "large.png"), 2800, 1800, lambda y: bytes([y % 256, 90, 160]) * 2800, 0)
 NOT_IMAGE = os.path.join(tmp, "notes.txt")
@@ -201,6 +202,14 @@ try:
     check("another panel starts with the same image and alignment", E("document.querySelector('#backdrop').style.backgroundPosition", sp2) == "right bottom" and not E("document.querySelector('#backdrop').hidden", sp2))
     # 保存済みの拡大率 200% が別パネルでも効く (縮めた LARGE_SVG の WebP は幅 2560px → 5120px auto)
     check("another panel applies the stored scale", E("document.querySelector('#backdrop').style.backgroundSize", sp2) == "5120px auto", E("document.querySelector('#backdrop').style.backgroundSize", sp2))
+
+    # --- 小さい画像を小さい率にしても 1px 以下にはならない (0px auto で画像が消える不具合) ---
+    pick_file(TINY)
+    check("a tiny image is stored", wait("chrome.storage.local.get('backgroundImage').then(r => (r.backgroundImage || '').startsWith('data:image/png'))"))
+    E("(() => { const r = document.querySelector('#in-bg-scale'); r.value = '10'; r.dispatchEvent(new Event('change', { bubbles: true })); })()"); time.sleep(0.5)
+    check("a tiny image at 10% is floored to 1px (not 0px)", backdrop()["size"] == "1px auto" and not backdrop()["hidden"] and stored().get("bgScale") == 10, json.dumps(backdrop()))
+    time.sleep(0.8)
+    check("another panel floors the tiny tile too", E("document.querySelector('#backdrop').style.backgroundSize", sp2) == "1px auto", E("document.querySelector('#backdrop').style.backgroundSize", sp2))
     saved_max = stored().get("maxPins")
     unsaved_max = next(v for v in ["12", "16", "20", "24"] if v != str(saved_max))
     choose("#in-maxpins", unsaved_max)
@@ -219,6 +228,8 @@ try:
     E("window.__ghWrites = 0; chrome.storage.onChanged.addListener((c, a) => { if (a === 'local' && c.github) window.__ghWrites++; }); 0")
     choose("#in-theme", "dark"); choose("#in-theme", "auto")
     E("(() => { const r = document.querySelector('#in-bg-transparency'); r.value = '25'; r.dispatchEvent(new Event('change', { bubbles: true })); })()")
+    E("document.querySelector('#in-bg-noise').click()")  # 質感の切り替えも見た目だけの変更
+    E("(() => { const r = document.querySelector('#in-bg-scale'); r.value = '50'; r.dispatchEvent(new Event('change', { bubbles: true })); })()")  # 拡大率も同じく
     time.sleep(1.5)
     check("appearance-only changes do not refetch GitHub", E("window.__ghWrites") == 0, E("window.__ghWrites"))
 

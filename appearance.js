@@ -103,7 +103,7 @@ function applyBackdrop(a) {
 // (background-size には内在サイズの割合を書けないので、画像の幅を測って計算する)
 function bgSizeValue(a) {
   if (a.bgSize === "auto" && a.bgScale !== 100 && backdropWidth)
-    return `${Math.round(backdropWidth * a.bgScale / 100)}px auto`;
+    return `${Math.max(1, Math.round(backdropWidth * a.bgScale / 100))}px auto`; // 小さい画像を小さい率にしても 0px にはしない
   return BG_SIZES.find(([id]) => id === a.bgSize)[2];
 }
 
