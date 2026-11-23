@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Sidebar</title>
   <link rel="stylesheet" href="sidepanel.css" />
-  <!-- 最初の描画より前にテーマとアクセント色を付けるので、<head> で同期的に読む -->
+  <!-- 最初の描画より前にテーマ・色味・アクセント色を付けるので、<head> で同期的に読む -->
   <script src="appearance.js"></script>
 </head>
 <body>
@@ -153,6 +153,10 @@
         <span data-i18n="labelTheme"></span>
         <select id="in-theme"></select>
       </label>
+      <div class="field">
+        <span class="field-label" id="lbl-tint" data-i18n="labelTint"></span>
+        <div id="in-tint" class="swatches" role="radiogroup" aria-labelledby="lbl-tint"></div>
+      </div>
       <div class="field">
         <span class="field-label" id="lbl-accent" data-i18n="labelAccent"></span>
         <div id="in-accent" class="swatches" role="radiogroup" aria-labelledby="lbl-accent"></div>

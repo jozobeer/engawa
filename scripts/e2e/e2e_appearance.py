@@ -1,7 +1,7 @@
-# 見た目 (テーマ・アクセント色・背景画像) の E2E (使い捨てプロファイルのヘッドレス Chrome)
+# 見た目 (テーマ・色味・アクセント色・背景画像) の E2E (使い捨てプロファイルのヘッドレス Chrome)
 # 使い方: python3 scripts/e2e/e2e_appearance.py <拡張のディレクトリ>   (ネットワーク不要)
 # OS のライト / ダークは Emulation.setEmulatedMedia で切り替え、画像は DOM.setFileInputFiles で実際に選ぶ。
-import sys, time, json, os, struct, zlib, tempfile, shutil
+import sys, time, json, os, re, struct, zlib, tempfile, shutil
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from cdp import Chrome
 ext = sys.argv[1]
@@ -113,6 +113,46 @@ try:
     check("back to the default accent removes data-accent", accent_attr() == "" and primary_bg() == "rgb(124, 138, 255)", f"{accent_attr()} {primary_bg()}")
     media("light"); time.sleep(0.3)
 
+    # --- カラーテーマ (サイドバーの色味): 面の色が一式で変わる。アクセント色 (強調) とは独立 ---
+    tint_attr = lambda s=sp: E("document.documentElement.dataset.tint || ''", s)
+    check("seven tint swatches", E("document.querySelectorAll('#in-tint input[type=radio]').length") == 7)
+    check("the default tint is neutral with no data-tint", E("document.querySelector('#in-tint input:checked')?.value") == "neutral" and tint_attr() == "", tint_attr())
+    E("document.querySelector('#in-tint input[value=sakura]').click()"); time.sleep(0.5)
+    check("choosing sakura sets data-tint and saves right away", tint_attr() == "sakura" and stored().get("tint") == "sakura", tint_attr())
+    check("sakura repaints the surfaces in light",
+          all(v != d for v, d in [(var("--bg"), "#eef0f6"), (var("--fg"), "#1f2330"), (var("--muted"), "#6b7280"),
+                                  (var("--tile"), "rgba(255, 255, 255, 0.85)"), (var("--border"), "rgba(0, 0, 0, 0.06)")]),
+          json.dumps([var("--bg"), var("--fg"), var("--muted"), var("--tile"), var("--border")]))
+    check("the accent stays indigo under a tint", primary_bg() == "rgb(91, 108, 255)", primary_bg())
+    check("the tint is cached in localStorage for the next open", json.loads(E("localStorage.getItem('appearance')") or "{}").get("tint") == "sakura")
+    sakura_light_bg = var("--bg")
+    media("dark"); time.sleep(0.3)
+    check("sakura has its dark palette in dark", var("--bg") != sakura_light_bg and var("--bg") != "#1c1e26" and var("--fg") != "#e6e8ef", f"{var('--bg')} {var('--fg')}")
+    media("light"); time.sleep(0.3)
+
+    # --- どの色味でも、ライト / ダークとも本文と補足文字が読めるコントラストを保つ (WCAG 相当) ---
+    def lum(rgb):
+        vals = [float(x) / 255 for x in re.search(r"rgba?\(([^)]*)\)", rgb).group(1).split(",")[:3]]
+        f = lambda ch: ch / 12.92 if ch <= 0.04045 else ((ch + 0.055) / 1.055) ** 2.4
+        r, g, b = (f(ch) for ch in vals)
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b
+    def contrast(a, b):
+        hi, lo = sorted((lum(a), lum(b)), reverse=True)
+        return (hi + 0.05) / (lo + 0.05)
+    body_fg = lambda: E("getComputedStyle(document.body).color")
+    body_bg = lambda: E("getComputedStyle(document.body).backgroundColor")
+    muted_fg = lambda: E("getComputedStyle(document.querySelector('.muted')).color")
+    for tname in ["sakura", "amber", "matcha", "sora", "fuji", "grape"]:
+        E(f"document.querySelector('#in-tint input[value={tname}]').click()"); time.sleep(0.4)
+        for scheme_name in ["light", "dark"]:
+            media(scheme_name); time.sleep(0.3)
+            fg_c, muted_c = contrast(body_fg(), body_bg()), contrast(muted_fg(), body_bg())
+            check(f"{tname} stays readable in {scheme_name}", fg_c >= 4.5 and muted_c >= 4.0, f"fg={fg_c:.2f} muted={muted_c:.2f}")
+    media("light"); time.sleep(0.3)
+    E("document.querySelector('#in-tint input[value=neutral]').click()"); time.sleep(0.5)
+    check("back to neutral removes data-tint and restores the surfaces", tint_attr() == "" and var("--bg") == "#eef0f6" and var("--fg") == "#1f2330", f"{tint_attr()} {var('--bg')}")
+    check("neutral keeps the tint key stored as the default", stored().get("tint") == "neutral", json.dumps(stored().get("tint")))
+
     # --- 背景の質感 (ノイズ): 既定は on、チェックを外すと層ごと消える ---
     noise_attr = lambda: E("document.documentElement.dataset.noise || ''")
     noise_content = lambda: E("getComputedStyle(document.body, '::before').content")
@@ -188,6 +228,8 @@ try:
     choose("#in-maxpins", unsaved_max)
     E("document.querySelector('#in-accent input[value=orange]').click()"); time.sleep(0.8)
     check("another panel follows an accent change", accent_attr(sp2) == "orange", accent_attr(sp2))
+    E("document.querySelector('#in-tint input[value=grape]').click()"); time.sleep(0.8)
+    check("another panel follows a tint change", tint_attr(sp2) == "grape", tint_attr(sp2))
     shown_max = E("document.querySelector('#in-maxpins').value")
     check("an accent change keeps the unsaved favorites limit", shown_max == unsaved_max and stored().get("maxPins") == saved_max, f"shown={shown_max} stored={stored().get('maxPins')}")
 
@@ -207,15 +249,15 @@ try:
     # --- 保存ボタン (他の設定の保存) で見た目の値が消えない ---
     E("document.querySelector('#settings-form').requestSubmit()"); time.sleep(2)
     s = stored()
-    check("saving the form keeps the appearance settings", s.get("accent") == "orange" and s.get("theme") == "auto" and s.get("bgPosition") == "right bottom" and s.get("bgTransparency") == 25, json.dumps(s))
+    check("saving the form keeps the appearance settings", s.get("accent") == "orange" and s.get("tint") == "grape" and s.get("theme") == "auto" and s.get("bgPosition") == "right bottom" and s.get("bgTransparency") == 25, json.dumps(s))
     check("saving the form stores the favorites limit chosen before the accent change", s.get("maxPins") == int(unsaved_max), json.dumps(s.get("maxPins")))
     check("saving the form still refetches GitHub", E("window.__ghWrites") > 0, E("window.__ghWrites"))
 
     # --- 壊れた値は既定に戻す ---
-    E("chrome.storage.local.get('settings').then(r => chrome.storage.local.set({ settings: { ...r.settings, theme: 'neon', accent: 'x', bgTransparency: 'abc', bgPosition: 'nowhere', bgRepeat: 1, bgSize: null, bgNoise: 'loud' } }))"); time.sleep(0.8)
-    check("broken values fall back to the defaults", scheme() == "light" and accent_attr() == "", f"{scheme()} {accent_attr()}")
+    E("chrome.storage.local.get('settings').then(r => chrome.storage.local.set({ settings: { ...r.settings, theme: 'neon', tint: 'neon', accent: 'x', bgTransparency: 'abc', bgPosition: 'nowhere', bgRepeat: 1, bgSize: null, bgNoise: 'loud' } }))"); time.sleep(0.8)
+    check("broken values fall back to the defaults", scheme() == "light" and accent_attr() == "" and tint_attr() == "", f"{scheme()} {accent_attr()} {tint_attr()}")
     E("showSettings()"); time.sleep(0.3)
-    check("the settings show the defaults for broken values", E("[document.querySelector('#in-theme').value, document.querySelector('#in-bg-transparency').value, document.querySelector('#in-bg-size').value, document.querySelector('#in-bg-noise').checked].join()") == "auto,60,cover,true")
+    check("the settings show the defaults for broken values", E("[document.querySelector('#in-theme').value, document.querySelector('#in-tint input:checked')?.value, document.querySelector('#in-bg-transparency').value, document.querySelector('#in-bg-size').value, document.querySelector('#in-bg-noise').checked].join()") == "auto,neutral,60,cover,true")
 
     exc = [e for e in c.events if e.get("method") == "Runtime.exceptionThrown"]
     check("no uncaught exceptions", not exc, json.dumps(exc[:1])[:300])

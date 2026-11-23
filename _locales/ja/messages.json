@@ -583,6 +583,30 @@
   "accentGraphite": {
     "message": "グラファイト"
   },
+  "labelTint": {
+    "message": "サイドバーの色味"
+  },
+  "tintNeutral": {
+    "message": "ニュートラル"
+  },
+  "tintSakura": {
+    "message": "さくら"
+  },
+  "tintAmber": {
+    "message": "琥珀"
+  },
+  "tintMatcha": {
+    "message": "抹茶"
+  },
+  "tintSora": {
+    "message": "空"
+  },
+  "tintFuji": {
+    "message": "藤"
+  },
+  "tintGrape": {
+    "message": "ぶどう"
+  },
   "labelBgImage": {
     "message": "背景画像"
   },

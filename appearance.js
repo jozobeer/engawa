@@ -1,9 +1,15 @@
-// 見た目: テーマ (ライト / ダーク)、アクセント色、背景画像。
-// <head> で読み込み、最初の描画より前に <html> の data-scheme / data-accent を付ける。設定は storage にあって読むのが
+// 見た目: テーマ (ライト / ダーク)、色味 (カラーテーマ)、アクセント色、背景画像。
+// <head> で読み込み、最初の描画より前に <html> の data-scheme / data-tint / data-accent を付ける。設定は storage にあって読むのが
 // 非同期なので、前回の値を localStorage に控えておき、パネルを開いたときのちらつきを防ぐ (控えが無ければ OS に従う)。
 // このファイルのトップレベルは他のファイルより先に動くので、トップレベルでは他のファイルの関数や変数に触れない。
 
 const THEMES = [["auto", "themeAuto"], ["light", "themeLight"], ["dark", "themeDark"]];
+// サイドバー全体の色味 (カラーテーマ)。Arc のスペース色相当。面の色の値は sidepanel.css の
+// :root[data-tint] (ライト) と :root[data-scheme="dark"][data-tint] (ダーク) にだけ書く。先頭が既定 (無彩色)
+const TINTS = [
+  ["neutral", "tintNeutral"], ["sakura", "tintSakura"], ["amber", "tintAmber"], ["matcha", "tintMatcha"],
+  ["sora", "tintSora"], ["fuji", "tintFuji"], ["grape", "tintGrape"],
+];
 // アクセント色。色の値は sidepanel.css の --accent-<id> (ライトとダークで別の値) にだけ書く。先頭が既定
 const ACCENTS = [
   ["indigo", "accentIndigo"], ["blue", "accentBlue"], ["teal", "accentTeal"], ["purple", "accentPurple"],
@@ -37,6 +43,7 @@ function appearanceOf(s) {
   const tr = Number(s.bgTransparency);
   return {
     theme: oneOf(s.theme, THEMES),
+    tint: oneOf(s.tint, TINTS),
     accent: oneOf(s.accent, ACCENTS),
     bgNoise: s.bgNoise !== false, // 既定は on (false だけオフ)
     bgTransparency: Number.isFinite(tr) ? Math.min(100, Math.max(0, tr)) : 60,
@@ -60,6 +67,14 @@ function applyTheme(theme, accent) {
   else root.dataset.accent = accent;
 }
 
+// 面の色味 (body のグラデーション・タイル・文字のトーン)。既定 (neutral) は属性を付けない
+// (icons.js にもタイルのアイコン色を付ける applyTint があるので別名にする)
+function applyColorTheme(tint) {
+  const root = document.documentElement;
+  if (tint === TINTS[0][0]) delete root.dataset.tint;
+  else root.dataset.tint = tint;
+}
+
 // 背景の質感 (body::before のノイズ層)。オフのときだけ data-noise を付ける
 function applyNoise(on) {
   const root = document.documentElement;
@@ -76,8 +91,9 @@ function cachedAppearance() {
 function applyAppearance(s) {
   const a = appearanceOf(s);
   applyTheme(a.theme, a.accent);
+  applyColorTheme(a.tint);
   applyNoise(a.bgNoise);
-  try { localStorage.setItem(APPEARANCE_CACHE_KEY, JSON.stringify({ theme: a.theme, accent: a.accent, bgNoise: a.bgNoise })); }
+  try { localStorage.setItem(APPEARANCE_CACHE_KEY, JSON.stringify({ theme: a.theme, tint: a.tint, accent: a.accent, bgNoise: a.bgNoise })); }
   catch { /* 控えられなくても、次に開いたとき一瞬 OS の配色になるだけ */ }
   applyBackdrop(a);
 }
@@ -177,6 +193,7 @@ function showBgStatus(key) {
 function syncAppearanceControls() {
   const a = appearanceOf(settings);
   $("#in-theme").value = a.theme;
+  document.querySelectorAll('input[name="tint"]').forEach((r) => { r.checked = r.value === a.tint; });
   document.querySelectorAll('input[name="accent"]').forEach((r) => { r.checked = r.value === a.accent; });
   $("#in-bg-transparency").value = String(a.bgTransparency);
   $("#out-bg-transparency").value = `${a.bgTransparency}%`;
@@ -227,10 +244,12 @@ function setupAppearanceSettings() {
   fillSelect($("#in-theme"), THEMES);
   fillSelect($("#in-bg-repeat"), BG_REPEATS);
   fillSelect($("#in-bg-size"), BG_SIZES);
+  radioGroup($("#in-tint"), "tint", TINTS, "tint-swatch", (input, id) => input.style.setProperty("--swatch", `var(--chip-${id})`));
   radioGroup($("#in-accent"), "accent", ACCENTS, "swatch", (input, id) => input.style.setProperty("--swatch", `var(--accent-${id})`));
   radioGroup($("#in-bg-position"), "bg-position", BG_POSITIONS, "position-cell");
 
   $("#in-theme").addEventListener("change", (e) => saveAppearance({ theme: e.target.value }));
+  $("#in-tint").addEventListener("change", (e) => saveAppearance({ tint: e.target.value }));
   $("#in-accent").addEventListener("change", (e) => saveAppearance({ accent: e.target.value }));
   $("#in-bg-position").addEventListener("change", (e) => saveAppearance({ bgPosition: e.target.value }));
   $("#in-bg-repeat").addEventListener("change", (e) => saveAppearance({ bgRepeat: e.target.value }));
@@ -254,5 +273,6 @@ function setupAppearanceSettings() {
 {
   const cached = cachedAppearance();
   applyTheme(cached.theme, cached.accent);
+  applyColorTheme(cached.tint);
   applyNoise(cached.bgNoise);
 }

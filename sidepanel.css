@@ -52,6 +52,152 @@
 :root[data-accent="orange"] { --accent: var(--accent-orange); }
 :root[data-accent="graphite"] { --accent: var(--accent-graphite); }
 
+/* ---- カラーテーマ (サイドバー全体の色味。appearance.js の TINTS) ----
+   Arc のスペース色と同じく、面の色 (--bg / --bg-grad / --panel / --tile / --tile-hover / --fg / --muted / --border)
+   を一式で上書きする。既定 (neutral) は data-tint を付けず、上の :root / :root[data-scheme="dark"] の値のまま。
+   ライト用は :root[data-tint]、ダーク用は :root[data-scheme="dark"][data-tint] (詳細度を上げてダークではそちらだけ効かせる)。
+   アクセント色 (ボタン・強調) とは独立。文字はライトなら暗く・ダークなら明るいまま保ち、タイルの透過色にも
+   色相を持たせて、重なった先でも色味が残るようにする */
+:root[data-tint="sakura"] {
+  --bg: hsl(345 45% 95%);
+  --bg-grad: linear-gradient(180deg, hsl(345 45% 95%) 0%, hsl(345 38% 92%) 100%);
+  --panel: hsl(345 55% 99% / .55);
+  --tile: hsl(345 50% 99% / .85);
+  --tile-hover: hsl(345 45% 100%);
+  --fg: hsl(342 26% 17%);
+  --muted: hsl(342 12% 44%);
+  --border: hsl(342 30% 15% / .08);
+}
+:root[data-scheme="dark"][data-tint="sakura"] {
+  --bg: hsl(342 24% 13%);
+  --bg-grad: linear-gradient(180deg, hsl(342 24% 13%) 0%, hsl(342 27% 10%) 100%);
+  --panel: hsl(342 30% 92% / .05);
+  --tile: hsl(342 28% 92% / .09);
+  --tile-hover: hsl(342 26% 92% / .15);
+  --fg: hsl(342 18% 91%);
+  --muted: hsl(342 10% 66%);
+  --border: hsl(342 30% 92% / .09);
+}
+:root[data-tint="amber"] {
+  --bg: hsl(33 50% 94%);
+  --bg-grad: linear-gradient(180deg, hsl(33 50% 94%) 0%, hsl(31 42% 91%) 100%);
+  --panel: hsl(38 60% 99% / .55);
+  --tile: hsl(38 55% 99% / .85);
+  --tile-hover: hsl(38 50% 100%);
+  --fg: hsl(28 30% 16%);
+  --muted: hsl(28 15% 42%);
+  --border: hsl(28 35% 15% / .09);
+}
+:root[data-scheme="dark"][data-tint="amber"] {
+  --bg: hsl(30 26% 12%);
+  --bg-grad: linear-gradient(180deg, hsl(30 26% 12%) 0%, hsl(30 30% 9.5%) 100%);
+  --panel: hsl(32 32% 92% / .05);
+  --tile: hsl(32 30% 92% / .09);
+  --tile-hover: hsl(32 28% 92% / .15);
+  --fg: hsl(32 20% 91%);
+  --muted: hsl(30 12% 64%);
+  --border: hsl(32 32% 92% / .09);
+}
+:root[data-tint="matcha"] {
+  --bg: hsl(96 28% 94%);
+  --bg-grad: linear-gradient(180deg, hsl(96 28% 94%) 0%, hsl(98 24% 91%) 100%);
+  --panel: hsl(96 35% 99% / .55);
+  --tile: hsl(96 32% 99% / .85);
+  --tile-hover: hsl(96 30% 100%);
+  --fg: hsl(100 25% 15%);
+  --muted: hsl(100 11% 41%);
+  --border: hsl(100 25% 15% / .09);
+}
+:root[data-scheme="dark"][data-tint="matcha"] {
+  --bg: hsl(100 19% 12%);
+  --bg-grad: linear-gradient(180deg, hsl(100 19% 12%) 0%, hsl(100 22% 9.5%) 100%);
+  --panel: hsl(96 22% 92% / .05);
+  --tile: hsl(96 20% 92% / .09);
+  --tile-hover: hsl(96 20% 92% / .15);
+  --fg: hsl(96 14% 90%);
+  --muted: hsl(96 9% 63%);
+  --border: hsl(96 22% 92% / .09);
+}
+:root[data-tint="sora"] {
+  --bg: hsl(208 52% 94%);
+  --bg-grad: linear-gradient(180deg, hsl(208 52% 94%) 0%, hsl(210 44% 91%) 100%);
+  --panel: hsl(208 60% 99% / .55);
+  --tile: hsl(208 55% 99% / .85);
+  --tile-hover: hsl(208 50% 100%);
+  --fg: hsl(211 32% 16%);
+  --muted: hsl(211 16% 42%);
+  --border: hsl(211 40% 15% / .09);
+}
+:root[data-scheme="dark"][data-tint="sora"] {
+  --bg: hsl(212 32% 13%);
+  --bg-grad: linear-gradient(180deg, hsl(212 32% 13%) 0%, hsl(213 34% 10%) 100%);
+  --panel: hsl(212 35% 92% / .05);
+  --tile: hsl(212 32% 92% / .09);
+  --tile-hover: hsl(212 30% 92% / .15);
+  --fg: hsl(212 24% 91%);
+  --muted: hsl(212 13% 66%);
+  --border: hsl(212 35% 92% / .09);
+}
+:root[data-tint="fuji"] {
+  --bg: hsl(258 40% 95%);
+  --bg-grad: linear-gradient(180deg, hsl(258 40% 95%) 0%, hsl(258 34% 92%) 100%);
+  --panel: hsl(258 50% 99% / .55);
+  --tile: hsl(258 45% 99% / .85);
+  --tile-hover: hsl(258 42% 100%);
+  --fg: hsl(258 28% 18%);
+  --muted: hsl(258 13% 45%);
+  --border: hsl(258 32% 15% / .09);
+}
+:root[data-scheme="dark"][data-tint="fuji"] {
+  --bg: hsl(258 24% 14%);
+  --bg-grad: linear-gradient(180deg, hsl(258 24% 14%) 0%, hsl(258 26% 11%) 100%);
+  --panel: hsl(258 30% 93% / .05);
+  --tile: hsl(258 28% 93% / .09);
+  --tile-hover: hsl(258 26% 93% / .15);
+  --fg: hsl(258 20% 91%);
+  --muted: hsl(258 11% 67%);
+  --border: hsl(258 30% 93% / .09);
+}
+:root[data-tint="grape"] {
+  --bg: hsl(300 30% 95%);
+  --bg-grad: linear-gradient(180deg, hsl(300 30% 95%) 0%, hsl(300 26% 92%) 100%);
+  --panel: hsl(300 40% 99% / .55);
+  --tile: hsl(300 38% 99% / .85);
+  --tile-hover: hsl(300 35% 100%);
+  --fg: hsl(300 22% 18%);
+  --muted: hsl(300 10% 45%);
+  --border: hsl(300 28% 15% / .09);
+}
+:root[data-scheme="dark"][data-tint="grape"] {
+  --bg: hsl(300 20% 14%);
+  --bg-grad: linear-gradient(180deg, hsl(300 20% 14%) 0%, hsl(300 22% 11%) 100%);
+  --panel: hsl(300 25% 93% / .05);
+  --tile: hsl(300 23% 93% / .09);
+  --tile-hover: hsl(300 22% 93% / .15);
+  --fg: hsl(300 16% 91%);
+  --muted: hsl(300 9% 67%);
+  --border: hsl(300 26% 93% / .09);
+}
+/* 設定画面の色味の見本: その配色の縮図。実際の面より少し濃くして白い設定画面でも色相が読めるようにする */
+:root {
+  --chip-neutral: linear-gradient(160deg, #e2e6f2 0%, #c9cfdf 100%);
+  --chip-sakura: linear-gradient(160deg, hsl(345 55% 90%) 0%, hsl(345 48% 78%) 100%);
+  --chip-amber: linear-gradient(160deg, hsl(35 60% 90%) 0%, hsl(32 55% 76%) 100%);
+  --chip-matcha: linear-gradient(160deg, hsl(98 34% 89%) 0%, hsl(98 32% 75%) 100%);
+  --chip-sora: linear-gradient(160deg, hsl(208 60% 90%) 0%, hsl(210 55% 76%) 100%);
+  --chip-fuji: linear-gradient(160deg, hsl(258 48% 91%) 0%, hsl(258 42% 79%) 100%);
+  --chip-grape: linear-gradient(160deg, hsl(300 36% 91%) 0%, hsl(300 32% 78%) 100%);
+}
+:root[data-scheme="dark"] {
+  --chip-neutral: linear-gradient(160deg, #262933 0%, #3a3f4d 100%);
+  --chip-sakura: linear-gradient(160deg, hsl(342 28% 20%) 0%, hsl(342 30% 32%) 100%);
+  --chip-amber: linear-gradient(160deg, hsl(30 30% 19%) 0%, hsl(30 34% 29%) 100%);
+  --chip-matcha: linear-gradient(160deg, hsl(98 22% 19%) 0%, hsl(98 26% 28%) 100%);
+  --chip-sora: linear-gradient(160deg, hsl(212 36% 20%) 0%, hsl(212 38% 31%) 100%);
+  --chip-fuji: linear-gradient(160deg, hsl(258 28% 21%) 0%, hsl(258 30% 32%) 100%);
+  --chip-grape: linear-gradient(160deg, hsl(300 24% 21%) 0%, hsl(300 27% 32%) 100%);
+}
+
 * { box-sizing: border-box; }
 /* Arc 風のザラザラした質感: 背景のグラデーションの上に、SVG のノイズ (feTurbulence) を薄く重ねる。
    固定の疑似要素なのでスクロールしても動かず、内容の後ろ (z-index -1) に敷かれる。overlay 合成で色味は変えない */
@@ -301,6 +447,15 @@ code { font-size: 11px; background: var(--tile); padding: 1px 4px; border-radius
 }
 .swatch:checked { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--swatch); }
 .swatch:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+/* 色味の見本。--swatch は appearance.js が var(--chip-<id>) (配色のグラデーションの縮図) を入れる。
+   角丸の四角にして丸いアクセント見本と区別する。選択の輪はアクセント色 (グラデーションの縁取りはできない) */
+.tint-swatch {
+  appearance: none; margin: 0; width: 34px; height: 24px; border-radius: 7px; cursor: pointer;
+  background: var(--swatch); box-shadow: inset 0 0 0 1px rgb(0 0 0 / .12);
+}
+.tint-swatch:hover { filter: brightness(1.04); }
+.tint-swatch:checked { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
+.tint-swatch:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
 /* 背景画像の寄せ: 3x3 のマス (左上〜右下) */
 .position-grid { display: grid; grid-template-columns: repeat(3, 22px); gap: 4px; }
 .position-cell {

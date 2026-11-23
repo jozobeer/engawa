@@ -90,11 +90,12 @@ Each tile's bottom edge faintly shows the start of its title in a thin bold face
 
 While the GitHub token is unset, the GitHub section shows only a pointer to settings. Folders whose matching PR count is zero are hidden.
 
-### Appearance (theme & background)
+### Appearance (theme, color & background)
 
 Settings > "Appearance" changes the panel's colors and background, applied instantly — no save button (other windows' panels follow too).
 
 - **Theme**: Auto (follow OS light/dark, default) / Light / Dark
+- **Sidebar color**: 6 color themes (sakura, amber, matcha, sora, fuji, grape) plus Neutral — like Arc's space colors, they retint the whole panel (background gradient, tiles, borders and text shades) with a palette hand-tuned for each of light and dark. Independent of the accent color
 - **Accent color**: 7 choices (indigo, blue, teal, purple, pink, orange, graphite) for buttons and selection, each kept readable per theme
 - **Background image**: pick an image file for the panel background, with opacity (0% = the image as-is, default 60%), anchor (9 positions), repeat (none / both / horizontal / vertical), and size (cover / fit width / original). Images up to 1.5 MB are stored as-is (animated GIFs and SVGs included); larger ones are shrunk to a 2560px-long-edge WebP. Anything still over 3 MB after shrinking, and formats Chrome can't display (TIFF, HEIC…), aren't saved
 - **Background texture**: the grainy noise layered over the background can be switched off in settings ("Background texture")
@@ -162,9 +163,9 @@ Arc favorites (the grid atop its sidebar) import into the favorites grid; each S
 manifest.json    Extension definition (MV3, side_panel, commands, permissions, default_locale)
 background.js    GitHub GraphQL polling, favorite-adding shortcut & context menus, auto-archive
 sidepanel.html   Side panel UI (strings injected from messages.json via data-i18n* attributes)
-sidepanel.css    Styles (light / dark, accent colors)
+sidepanel.css    Styles (light / dark, sidebar color themes, accent colors)
 sidepanel.js     Grid & folder rendering, settings screen
-appearance.js    Appearance: applies theme (light/dark) & accent before first paint, background images, settings "Appearance"
+appearance.js    Appearance: applies theme (light/dark), color tint & accent before first paint, background images, settings "Appearance"
 i18n.js          Thin chrome.i18n wrapper (t / tn / localizeDocument)
 arc-import.js    Pure functions that parse Arc's StorableSidebar.json into import candidates (incl. Arc icon filename derivation)
 icons.js         Saving & rendering favorite/pinned icons (Chrome favicon detection, initial tiles, Arc icons, tile background color)
@@ -212,7 +213,7 @@ python3 scripts/e2e/e2e_dnd.py "$PWD"      # Today ⇄ pinned/favorites drags, f
 python3 scripts/e2e/e2e_pr_tabs.py "$PWD"  # dedicated tab per GitHub PR (no network)
 python3 scripts/e2e/e2e_split.py "$PWD"    # Today splits: single-row display, drag split/extract/pair-move, pair cleanup (no network, Chrome 155+)
 python3 scripts/e2e/e2e_split_items.py "$PWD"  # pinned split items: Today round-trips, combine/extract, click-reopen, races (no network, Chrome 155+)
-python3 scripts/e2e/e2e_appearance.py "$PWD"   # theme, accent color, background image (no network)
+python3 scripts/e2e/e2e_appearance.py "$PWD"   # theme, sidebar color, accent color, background image (no network)
 ```
 
 GitHub data comes from the GraphQL `search` API:
