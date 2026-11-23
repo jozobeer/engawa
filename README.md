@@ -97,7 +97,7 @@ Settings > "Appearance" changes the panel's colors and background, applied insta
 - **Theme**: Auto (follow OS light/dark, default) / Light / Dark
 - **Sidebar color**: 6 color themes (sakura, amber, matcha, sora, fuji, grape) plus Neutral — like Arc's space colors, they retint the whole panel (background gradient, tiles, borders and text shades) with a palette hand-tuned for each of light and dark. Independent of the accent color
 - **Accent color**: 7 choices (indigo, blue, teal, purple, pink, orange, graphite) for buttons and selection, each kept readable per theme
-- **Background image**: pick an image file for the panel background, with opacity (0% = the image as-is, default 60%), anchor (9 positions), repeat (none / both / horizontal / vertical), and size (cover / fit width / original). Images up to 1.5 MB are stored as-is (animated GIFs and SVGs included); larger ones are shrunk to a 2560px-long-edge WebP. Anything still over 3 MB after shrinking, and formats Chrome can't display (TIFF, HEIC…), aren't saved
+- **Background image**: pick an image file for the panel background, with opacity (0% = the image as-is, default 60%), anchor (9 positions), repeat (none / both / horizontal / vertical), and size (cover / fit width / original). "Original" comes with a scale slider (10–400%, default 100%) that works whether or not the image repeats, so tiled images can grow or shrink. Images up to 1.5 MB are stored as-is (animated GIFs and SVGs included); larger ones are shrunk to a 2560px-long-edge WebP. Anything still over 3 MB after shrinking, and formats Chrome can't display (TIFF, HEIC…), aren't saved
 - **Background texture**: the grainy noise layered over the background can be switched off in settings ("Background texture")
 
 ### Pinned tabs

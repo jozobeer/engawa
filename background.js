@@ -251,7 +251,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 });
 
 // 見た目の設定 (appearance.js) は変えるたびにその場で保存されるので、それだけの変更では GitHub を取り直さない
-const APPEARANCE_KEYS = ["theme", "tint", "accent", "bgNoise", "bgTransparency", "bgPosition", "bgRepeat", "bgSize"];
+const APPEARANCE_KEYS = ["theme", "tint", "accent", "bgNoise", "bgTransparency", "bgPosition", "bgRepeat", "bgSize", "bgScale"];
 function onlyAppearanceChanged({ oldValue = {}, newValue = {} }) {
   const keys = new Set([...Object.keys(oldValue), ...Object.keys(newValue)]);
   return [...keys].every((k) => APPEARANCE_KEYS.includes(k) || oldValue[k] === newValue[k]);

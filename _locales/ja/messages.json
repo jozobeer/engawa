@@ -676,6 +676,9 @@
   "bgSizeAuto": {
     "message": "原寸"
   },
+  "labelBgScale": {
+    "message": "拡大率 (原寸のとき)"
+  },
   "optBgNoise": {
     "message": "背景の質感 (ノイズ)"
   },

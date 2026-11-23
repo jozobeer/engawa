@@ -24,6 +24,9 @@ const BG_POSITIONS = [
 const BG_REPEATS = [["no-repeat", "bgRepeatNone"], ["repeat", "bgRepeatBoth"], ["repeat-x", "bgRepeatX"], ["repeat-y", "bgRepeatY"]];
 // 大きさ: 設定の値 → background-size
 const BG_SIZES = [["cover", "bgSizeCover", "cover"], ["width", "bgSizeWidth", "100% auto"], ["auto", "bgSizeAuto", "auto"]];
+// 「原寸」の拡大率 (%) の範囲。繰り返しの有無にかかわらず効く
+const BG_SCALE_MIN = 10;
+const BG_SCALE_MAX = 400;
 
 const BG_KEEP_BYTES = 1.5 * 1024 * 1024; // これ以下の画像はそのまま保存する (GIF のアニメ、SVG、ドット絵を崩さない)
 const BG_MAX_EDGE = 2560;                // 大きい画像は長辺をここまで縮め、WebP にして保存する
@@ -34,6 +37,7 @@ const darkQuery = matchMedia("(prefers-color-scheme: dark)");
 let shownTheme = "auto";      // いま反映しているテーマ (auto なら OS の切り替えに追従する)
 let shownAccent = ACCENTS[0][0];
 let backdropImage = "";       // 背景画像 (data URL)。storage.local の backgroundImage
+let backdropWidth = 0;        // その幅 (px)。「原寸」の拡大率の計算に使う。測れない・無いときは 0
 
 const ids = (list) => list.map(([id]) => id);
 const oneOf = (value, list) => (ids(list).includes(value) ? value : list[0][0]);
@@ -41,12 +45,14 @@ const oneOf = (value, list) => (ids(list).includes(value) ? value : list[0][0]);
 // 保存された設定から見た目の値を取り出す。壊れた値や古い値は既定に戻す
 function appearanceOf(s) {
   const tr = Number(s.bgTransparency);
+  const sc = Number(s.bgScale);
   return {
     theme: oneOf(s.theme, THEMES),
     tint: oneOf(s.tint, TINTS),
     accent: oneOf(s.accent, ACCENTS),
     bgNoise: s.bgNoise !== false, // 既定は on (false だけオフ)
     bgTransparency: Number.isFinite(tr) ? Math.min(100, Math.max(0, tr)) : 60,
+    bgScale: Number.isFinite(sc) ? Math.min(BG_SCALE_MAX, Math.max(BG_SCALE_MIN, sc)) : 100,
     bgPosition: ids(BG_POSITIONS).includes(s.bgPosition) ? s.bgPosition : "center center",
     bgRepeat: oneOf(s.bgRepeat, BG_REPEATS),
     bgSize: oneOf(s.bgSize, BG_SIZES),
@@ -106,12 +112,28 @@ function applyBackdrop(a) {
   el.style.opacity = String(1 - a.bgTransparency / 100);
   el.style.backgroundPosition = a.bgPosition;
   el.style.backgroundRepeat = a.bgRepeat;
-  el.style.backgroundSize = BG_SIZES.find(([id]) => id === a.bgSize)[2];
+  el.style.backgroundSize = bgSizeValue(a);
+}
+
+// 大きさの設定値 → background-size の値。「原寸」は拡大率を掛けたピクセル幅にする
+// (background-size には内在サイズの割合を書けないので、画像の幅を測って計算する)
+function bgSizeValue(a) {
+  if (a.bgSize === "auto" && a.bgScale !== 100 && backdropWidth)
+    return `${Math.max(1, Math.round(backdropWidth * a.bgScale / 100))}px auto`; // 小さい画像を小さい率にしても 0px にはしない
+  return BG_SIZES.find(([id]) => id === a.bgSize)[2];
+}
+
+// 画像の内在サイズの幅。大きさを持たない SVG や壊れた画像は 0 (拡大率は効かず原寸のまま)
+async function measuredWidth(src) {
+  if (!src) return 0;
+  try { return (await decodedImage(src)).naturalWidth || 0; }
+  catch { return 0; }
 }
 
 async function loadBackdropImage() {
   const { backgroundImage } = await chrome.storage.local.get("backgroundImage");
   backdropImage = typeof backgroundImage === "string" ? backgroundImage : "";
+  backdropWidth = await measuredWidth(backdropImage);
 }
 
 function blobDataUrl(blob) {
@@ -200,6 +222,9 @@ function syncAppearanceControls() {
   document.querySelectorAll('input[name="bg-position"]').forEach((r) => { r.checked = r.value === a.bgPosition; });
   $("#in-bg-repeat").value = a.bgRepeat;
   $("#in-bg-size").value = a.bgSize;
+  $("#in-bg-scale").value = String(a.bgScale);
+  $("#out-bg-scale").value = `${a.bgScale}%`;
+  $("#in-bg-scale").disabled = a.bgSize !== "auto"; // 「全体を覆う」「幅に合わせる」とは意味が重なるので効かない
   $("#in-bg-noise").checked = a.bgNoise;
   $("#bg-options").hidden = !backdropImage;
   $("#btn-bg-clear").hidden = !backdropImage;
@@ -224,6 +249,7 @@ async function onBackgroundChosen(e) {
     const dataUrl = await backgroundDataUrl(file);
     await chrome.storage.local.set({ backgroundImage: dataUrl });
     backdropImage = dataUrl;
+    backdropWidth = await measuredWidth(dataUrl); // 保存した (縮めた後の) 画像の幅が拡大率の基準
   } catch (err) {
     showBgStatus(bgErrorKey(err));
     return;
@@ -235,6 +261,7 @@ async function onBackgroundChosen(e) {
 async function clearBackground() {
   await chrome.storage.local.remove("backgroundImage");
   backdropImage = "";
+  backdropWidth = 0;
   showBgStatus("");
   applyAppearance(settings);
   syncAppearanceControls();
@@ -253,7 +280,10 @@ function setupAppearanceSettings() {
   $("#in-accent").addEventListener("change", (e) => saveAppearance({ accent: e.target.value }));
   $("#in-bg-position").addEventListener("change", (e) => saveAppearance({ bgPosition: e.target.value }));
   $("#in-bg-repeat").addEventListener("change", (e) => saveAppearance({ bgRepeat: e.target.value }));
-  $("#in-bg-size").addEventListener("change", (e) => saveAppearance({ bgSize: e.target.value }));
+  $("#in-bg-size").addEventListener("change", (e) => {
+    saveAppearance({ bgSize: e.target.value });
+    $("#in-bg-scale").disabled = e.target.value !== "auto"; // 保存の往復を待たず、効く・効かないをすぐ反映する
+  });
   $("#in-bg-noise").addEventListener("change", (e) => saveAppearance({ bgNoise: e.target.checked }));
   // スライダーは動かしている間は見た目だけ変え、離したときに保存する
   const range = $("#in-bg-transparency");
@@ -262,6 +292,12 @@ function setupAppearanceSettings() {
     applyBackdrop(appearanceOf({ ...settings, bgTransparency: range.value }));
   });
   range.addEventListener("change", () => saveAppearance({ bgTransparency: Number(range.value) }));
+  const scale = $("#in-bg-scale");
+  scale.addEventListener("input", () => {
+    $("#out-bg-scale").value = `${scale.value}%`;
+    applyBackdrop(appearanceOf({ ...settings, bgScale: scale.value }));
+  });
+  scale.addEventListener("change", () => saveAppearance({ bgScale: Number(scale.value) }));
 
   $("#btn-bg-pick").addEventListener("click", () => $("#in-bg-file").click());
   $("#in-bg-file").addEventListener("change", onBackgroundChosen);

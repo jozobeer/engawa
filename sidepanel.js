@@ -17,6 +17,7 @@ const DEFAULT_SETTINGS = {
   bgPosition: "center center",
   bgRepeat: "no-repeat",
   bgSize: "cover",       // cover (全体を覆う) / width (幅に合わせる) / auto (原寸)
+  bgScale: 100,          // 原寸 (auto) の拡大率 (%)。繰り返しの有無にかかわらず効く
   bgNoise: true,         // 背景のグラデーションに重ねるザラザラした質感
 };
 
