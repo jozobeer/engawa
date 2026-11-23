@@ -44,7 +44,6 @@
         <div class="head-actions">
           <span id="gh-updated" class="muted"></span>
           <button id="btn-refresh" class="icon-btn" data-i18n-title="refreshNowTitle" data-icon="refresh"></button>
-          <button id="btn-settings" class="icon-btn" data-i18n-title="settingsTitle" data-icon="settings"></button>
         </div>
       </header>
 
@@ -82,6 +81,10 @@
     </section>
 
     <div id="toast" class="toast" role="status" hidden></div>
+    <!-- 全体設定の入口。Arc と同じくパネルの下端に置く (セクションの色が付かない位置) -->
+    <footer class="panel-foot">
+      <button id="btn-settings" class="icon-btn" data-i18n-title="settingsTitle" data-icon="settings"></button>
+    </footer>
   </main>
 
   <!-- アーカイブ画面 -->
@@ -182,6 +185,10 @@
           <select id="in-bg-size"></select>
         </label>
       </div>
+      <label class="check">
+        <input id="in-bg-noise" type="checkbox" />
+        <span data-i18n="optBgNoise"></span>
+      </label>
       </fieldset>
 
       <label class="check">

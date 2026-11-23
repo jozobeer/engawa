@@ -38,6 +38,7 @@ function appearanceOf(s) {
   return {
     theme: oneOf(s.theme, THEMES),
     accent: oneOf(s.accent, ACCENTS),
+    bgNoise: s.bgNoise !== false, // 既定は on (false だけオフ)
     bgTransparency: Number.isFinite(tr) ? Math.min(100, Math.max(0, tr)) : 60,
     bgPosition: ids(BG_POSITIONS).includes(s.bgPosition) ? s.bgPosition : "center center",
     bgRepeat: oneOf(s.bgRepeat, BG_REPEATS),
@@ -59,6 +60,13 @@ function applyTheme(theme, accent) {
   else root.dataset.accent = accent;
 }
 
+// 背景の質感 (body::before のノイズ層)。オフのときだけ data-noise を付ける
+function applyNoise(on) {
+  const root = document.documentElement;
+  if (on) delete root.dataset.noise;
+  else root.dataset.noise = "off";
+}
+
 function cachedAppearance() {
   try { return appearanceOf(JSON.parse(localStorage.getItem(APPEARANCE_CACHE_KEY) || "{}")); }
   catch { return appearanceOf({}); } // 控えが壊れている・読めないときは OS に従う
@@ -68,7 +76,8 @@ function cachedAppearance() {
 function applyAppearance(s) {
   const a = appearanceOf(s);
   applyTheme(a.theme, a.accent);
-  try { localStorage.setItem(APPEARANCE_CACHE_KEY, JSON.stringify({ theme: a.theme, accent: a.accent })); }
+  applyNoise(a.bgNoise);
+  try { localStorage.setItem(APPEARANCE_CACHE_KEY, JSON.stringify({ theme: a.theme, accent: a.accent, bgNoise: a.bgNoise })); }
   catch { /* 控えられなくても、次に開いたとき一瞬 OS の配色になるだけ */ }
   applyBackdrop(a);
 }
@@ -174,6 +183,7 @@ function syncAppearanceControls() {
   document.querySelectorAll('input[name="bg-position"]').forEach((r) => { r.checked = r.value === a.bgPosition; });
   $("#in-bg-repeat").value = a.bgRepeat;
   $("#in-bg-size").value = a.bgSize;
+  $("#in-bg-noise").checked = a.bgNoise;
   $("#bg-options").hidden = !backdropImage;
   $("#btn-bg-clear").hidden = !backdropImage;
   $("#bg-thumb").hidden = !backdropImage;
@@ -225,6 +235,7 @@ function setupAppearanceSettings() {
   $("#in-bg-position").addEventListener("change", (e) => saveAppearance({ bgPosition: e.target.value }));
   $("#in-bg-repeat").addEventListener("change", (e) => saveAppearance({ bgRepeat: e.target.value }));
   $("#in-bg-size").addEventListener("change", (e) => saveAppearance({ bgSize: e.target.value }));
+  $("#in-bg-noise").addEventListener("change", (e) => saveAppearance({ bgNoise: e.target.checked }));
   // スライダーは動かしている間は見た目だけ変え、離したときに保存する
   const range = $("#in-bg-transparency");
   range.addEventListener("input", () => {
@@ -243,4 +254,5 @@ function setupAppearanceSettings() {
 {
   const cached = cachedAppearance();
   applyTheme(cached.theme, cached.accent);
+  applyNoise(cached.bgNoise);
 }

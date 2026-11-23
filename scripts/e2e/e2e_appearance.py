@@ -69,6 +69,15 @@ try:
     media("dark"); time.sleep(0.4)
     check("auto theme follows the OS switching to dark live", scheme() == "dark" and var("--bg") == "#1c1e26", f"{scheme()} {var('--bg')}")
 
+    # --- 設定ボタンは下端のフッタバーにあり、GitHub セクションの頭には無い ---
+    check("the settings gear lives in the footer bar, not the GitHub head",
+          E("!!document.querySelector('.panel-foot #btn-settings')") and not E("document.querySelector('.github #btn-settings')"))
+    E("document.querySelector('#btn-settings').click()"); time.sleep(0.3)
+    check("the footer gear opens the settings view", not E("document.querySelector('#view-settings').hidden"))
+    check("the footer hides with the main view", not E("document.querySelector('.panel-foot').checkVisibility()"))
+    E("document.querySelector('#btn-back').click()"); time.sleep(0.3)
+    check("back returns to the main view with the footer", E("document.querySelector('.panel-foot').checkVisibility()"))
+
     E("showSettings()"); time.sleep(0.3)
     check("the theme select lists auto / light / dark", E("[...document.querySelectorAll('#in-theme option')].map(o => o.value).join()") == "auto,light,dark")
     choose("#in-theme", "light")
@@ -103,6 +112,15 @@ try:
     E("document.querySelector('#in-accent input[value=indigo]').click()"); time.sleep(0.5)
     check("back to the default accent removes data-accent", accent_attr() == "" and primary_bg() == "rgb(124, 138, 255)", f"{accent_attr()} {primary_bg()}")
     media("light"); time.sleep(0.3)
+
+    # --- 背景の質感 (ノイズ): 既定は on、チェックを外すと層ごと消える ---
+    noise_attr = lambda: E("document.documentElement.dataset.noise || ''")
+    noise_content = lambda: E("getComputedStyle(document.body, '::before').content")
+    check("noise is on by default", noise_attr() == "" and noise_content() != "none" and E("document.querySelector('#in-bg-noise').checked"))
+    E("document.querySelector('#in-bg-noise').click()"); time.sleep(0.5)
+    check("unchecking removes the noise layer", noise_attr() == "off" and noise_content() == "none" and stored().get("bgNoise") == False, f"{noise_attr()} {noise_content()}")
+    E("document.querySelector('#in-bg-noise').click()"); time.sleep(0.5)
+    check("checking restores the noise layer", noise_attr() == "" and noise_content() != "none" and stored().get("bgNoise") == True, noise_attr())
 
     # --- 背景画像: 小さい画像はそのまま保存し、既定の見た目で敷く ---
     check("no image: the image options are hidden", E("document.querySelector('#bg-options').hidden") and backdrop()["hidden"])
@@ -194,10 +212,10 @@ try:
     check("saving the form still refetches GitHub", E("window.__ghWrites") > 0, E("window.__ghWrites"))
 
     # --- 壊れた値は既定に戻す ---
-    E("chrome.storage.local.get('settings').then(r => chrome.storage.local.set({ settings: { ...r.settings, theme: 'neon', accent: 'x', bgTransparency: 'abc', bgPosition: 'nowhere', bgRepeat: 1, bgSize: null } }))"); time.sleep(0.8)
+    E("chrome.storage.local.get('settings').then(r => chrome.storage.local.set({ settings: { ...r.settings, theme: 'neon', accent: 'x', bgTransparency: 'abc', bgPosition: 'nowhere', bgRepeat: 1, bgSize: null, bgNoise: 'loud' } }))"); time.sleep(0.8)
     check("broken values fall back to the defaults", scheme() == "light" and accent_attr() == "", f"{scheme()} {accent_attr()}")
     E("showSettings()"); time.sleep(0.3)
-    check("the settings show the defaults for broken values", E("[document.querySelector('#in-theme').value, document.querySelector('#in-bg-transparency').value, document.querySelector('#in-bg-size').value].join()") == "auto,60,cover")
+    check("the settings show the defaults for broken values", E("[document.querySelector('#in-theme').value, document.querySelector('#in-bg-transparency').value, document.querySelector('#in-bg-size').value, document.querySelector('#in-bg-noise').checked].join()") == "auto,60,cover,true")
 
     exc = [e for e in c.events if e.get("method") == "Runtime.exceptionThrown"]
     check("no uncaught exceptions", not exc, json.dumps(exc[:1])[:300])

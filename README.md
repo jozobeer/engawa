@@ -39,7 +39,7 @@ The UI (side panel, extension name, context menus, tooltips) follows Chrome's di
 
 ## GitHub integration setup
 
-1. Open settings from the panel's slider button
+1. Open settings from the slider button in the panel's bottom bar
 2. Enter the hostname (leave it as github.com; for GHES enter just the hostname like `github.example.co.jp`)
 3. Enter a Personal Access Token
    - classic token: `repo` scope (to include private repositories)
@@ -97,6 +97,7 @@ Settings > "Appearance" changes the panel's colors and background, applied insta
 - **Theme**: Auto (follow OS light/dark, default) / Light / Dark
 - **Accent color**: 7 choices (indigo, blue, teal, purple, pink, orange, graphite) for buttons and selection, each kept readable per theme
 - **Background image**: pick an image file for the panel background, with opacity (0% = the image as-is, default 60%), anchor (9 positions), repeat (none / both / horizontal / vertical), and size (cover / fit width / original). Images up to 1.5 MB are stored as-is (animated GIFs and SVGs included); larger ones are shrunk to a 2560px-long-edge WebP. Anything still over 3 MB after shrinking, and formats Chrome can't display (TIFF, HEIC…), aren't saved
+- **Background texture**: the grainy noise layered over the background can be switched off in settings ("Background texture")
 
 ### Pinned tabs
 
