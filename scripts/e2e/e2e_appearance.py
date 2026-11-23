@@ -178,6 +178,14 @@ try:
     E("document.querySelector('#in-bg-noise').click()"); time.sleep(0.5)
     check("checking restores the noise layer", noise_attr() == "" and noise_content() != "none" and stored().get("bgNoise") == True, noise_attr())
 
+    # --- オーバースクロール (issue #10): パネル内で rubber-band させない ---
+    # スクロールするのはドキュメント自身 (内側のスクロールコンテナは無い)。rubber-band は
+    # ヘッドレスで再現できないので、対象要素の computed style を確かめる
+    ob = lambda sel: E(f"getComputedStyle({sel}).overscrollBehavior")
+    check("the document does not rubber-band on overscroll",
+          ob("document.documentElement") == "none" and ob("document.body") == "none",
+          f"html={ob('document.documentElement')} body={ob('document.body')}")
+
     # --- 背景画像: 小さい画像はそのまま保存し、既定の見た目で敷く ---
     check("no image: the image options are hidden", E("document.querySelector('#bg-options').hidden") and backdrop()["hidden"])
     pick_file(SMALL)
