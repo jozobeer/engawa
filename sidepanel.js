@@ -11,6 +11,7 @@ const DEFAULT_SETTINGS = {
   ghDedicatedTab: true,  // PR は PR ごとの専用タブで開く (タブを使い回す)
   // 見た目 (appearance.js。値の一覧と、壊れた値を既定に戻す appearanceOf もそちら)
   theme: "auto",         // auto (OS に従う) / light / dark
+  tint: "neutral",       // サイドバー全体の色味 (カラーテーマ。面の色)。アクセント色 (強調) とは独立
   accent: "indigo",      // アクセント色
   bgTransparency: 60,    // 背景画像の透明度 (%)。0 で画像そのまま、100 で見えない。画像は storage.local の backgroundImage
   bgPosition: "center center",
@@ -1423,7 +1424,7 @@ async function init() {
   applyUiIcons();
   // ＋ は「ピン (sync) → 担当 (session)」の順に書くので、担当を先に読めば、見える担当には必ずピンがある
   await Promise.all([loadSettings(), loadBackdropImage(), refreshOpenTabs(), applyShortcutLabels(), loadOwnedTabs(), loadIconStore()]);
-  applyAppearance(settings); // テーマとアクセント色は appearance.js が前回の値で付けてあるので、ここでは保存された値に合わせ直す
+  applyAppearance(settings); // テーマ・色味・アクセント色は appearance.js が前回の値で付けてあるので、ここでは保存された値に合わせ直す
   setupAppearanceSettings();
   await loadPins();
   await loadPinnedTabs(); // 担当先の一覧 (allOwnerTargets) に使うので、結び直しより前に読む

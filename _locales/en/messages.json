@@ -583,6 +583,30 @@
   "accentGraphite": {
     "message": "Graphite"
   },
+  "labelTint": {
+    "message": "Sidebar color"
+  },
+  "tintNeutral": {
+    "message": "Neutral"
+  },
+  "tintSakura": {
+    "message": "Sakura"
+  },
+  "tintAmber": {
+    "message": "Amber"
+  },
+  "tintMatcha": {
+    "message": "Matcha"
+  },
+  "tintSora": {
+    "message": "Sky"
+  },
+  "tintFuji": {
+    "message": "Lavender"
+  },
+  "tintGrape": {
+    "message": "Grape"
+  },
   "labelBgImage": {
     "message": "Background image"
   },

@@ -33,13 +33,14 @@ paths: ["*.js", "sidepanel.html", "sidepanel.css"]
 - 長くなりうる文字 (タイトル、URL、ログイン、ホスト名) はパネルを横にスクロールさせない。グリッドの文字の列は `minmax(0, 1fr)` にするか、直下の要素に `overflow: hidden` / `min-width: 0` を付ける (`1fr` だけだと列の最小幅が中身の幅になる)。flex の子も `min-width: auto` のままでは縮まない。エラー文のように折り返す文は `overflow-wrap: anywhere` (break-word は最小幅を下げない)。確かめは `e2e_pr_tabs.py` の末尾と同じく 320px 幅で `scrollWidth <= clientWidth`
 - ライト / ダークは `@media (prefers-color-scheme)` ではなく、`<html data-scheme="light|dark">` で切り替える (設定のテーマで OS と違う配色にできるため)。`appearance.js` を `<head>` で同期的に読み、前回の値 (localStorage の `appearance`) を最初の描画より前に付けてちらつきを防ぐ。テーマが「自動」のときは `matchMedia` で OS の切り替えに追従する。ダークの変数は `:root[data-scheme="dark"]`、それ以外のダーク用の規則は `:where(:root[data-scheme="dark"])` で包む (詳細度をライトの規則と同じに保ち、後に書いた方が勝つという元の重なり方を変えない)
 - アクセント色の値は `--accent-<id>` (ライトとダークで別の値) にだけ書き、`:root[data-accent="<id>"]` で `--accent` に差す。既定 (indigo) は属性を付けない。色の一覧は `appearance.js` の `ACCENTS` で、設定画面の見本もそこから作る
+- カラーテーマ (サイドバー全体の色味) は `<html data-tint="<id>">` で切り替える。既定 (neutral) は属性を付けない。面の変数 (`--bg` / `--bg-grad` / `--panel` / `--tile` / `--tile-hover` / `--fg` / `--muted` / `--border`) は `:root[data-tint="<id>"]` (ライト) と `:root[data-scheme="dark"][data-tint="<id>"]` (ダーク。詳細度を上げてダークではそちらだけ効かせる) に一式で書く。色の一覧は `appearance.js` の `TINTS`、設定画面の見本は `--chip-<id>` (ライト / ダークで別の値)。アクセント色 (強調) とは独立に効く
 - 背景画像は固定の層 `#backdrop` (z-index -2) で、地色のグラデーション (body の背景) の上、ノイズの質感 (`body::before`、z-index -1) の下に敷く
 - 見た目の方針はエンボス (レタープレス) 風。セクション見出しとお気に入りの短い名前は、文字を半透明にして下に明るい縁・上に暗い縁 (`text-shadow`) を付ける。色付きタイルの上ではタイルの色相の濃淡で彫る。新しい見出しを足すときも同じ作りにする
 
 ## 保存先
 
 - `chrome.storage.sync`: `pins` (お気に入り)、`pinnedTabs` (ピン留めタブのツリー。フォルダの中にも置ける分割項目は `{type:"split", id, children:[tab, tab]}` で、`split.id` は担当先ではなく DOM のキーと並べ替えの単位)。1 項目 8 KB (`QUOTA_BYTES_PER_ITEM`) を超えると `set` が拒否される。書く前に `pinsFit` / `pinnedTabsFit` で確かめ、失敗時は元に戻して `pinStorageFull` を出す
-- `chrome.storage.local`: `settings` (見た目の `theme` / `accent` / `bg*` も含む)、`backgroundImage` (背景画像の data URL。数 MB になりうるので `settings` とは別のキー)、`icons` (URL → data URL)、`ownedUrls`、`ownedPinned`、`archive`、`folderCollapsed`
+- `chrome.storage.local`: `settings` (見た目の `theme` / `tint` / `accent` / `bg*` も含む)、`backgroundImage` (背景画像の data URL。数 MB になりうるので `settings` とは別のキー)、`icons` (URL → data URL)、`ownedUrls`、`ownedPinned`、`archive`、`folderCollapsed`
 - `chrome.storage.session`: `ownedTabs`、`archiveGraceFrom`、`archiveSkip` (beforeunload で閉じられなかったタブの lastAccessed)
 - 自動アーカイブはタブごとに並列に閉じて閉じた時点で記録し、応答は 5 秒で打ち切る。`tabs.remove` は beforeunload をキャンセルされると永久に解決しないため
 - `storage.local.settings` は見た目の設定を変えるたびに書かれる。`settings` の `onChanged` で重い処理 (GitHub の取り直し、アラームの張り直し) や入力欄の同期をするときは、関係するキーの `oldValue` / `newValue` を比べる (background.js の `onlyAppearanceChanged`、自動アーカイブの `autoArchiveHours` と同じ形)
