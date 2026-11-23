@@ -39,7 +39,7 @@ The UI (side panel, extension name, context menus, tooltips) follows Chrome's di
 
 ## GitHub integration setup
 
-1. Open settings from the panel's slider button
+1. Open settings from the slider button in the panel's bottom bar
 2. Enter the hostname (leave it as github.com; for GHES enter just the hostname like `github.example.co.jp`)
 3. Enter a Personal Access Token
    - classic token: `repo` scope (to include private repositories)

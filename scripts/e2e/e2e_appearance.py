@@ -69,6 +69,15 @@ try:
     media("dark"); time.sleep(0.4)
     check("auto theme follows the OS switching to dark live", scheme() == "dark" and var("--bg") == "#1c1e26", f"{scheme()} {var('--bg')}")
 
+    # --- 設定ボタンは下端のフッタバーにあり、GitHub セクションの頭には無い ---
+    check("the settings gear lives in the footer bar, not the GitHub head",
+          E("!!document.querySelector('.panel-foot #btn-settings')") and not E("document.querySelector('.github #btn-settings')"))
+    E("document.querySelector('#btn-settings').click()"); time.sleep(0.3)
+    check("the footer gear opens the settings view", not E("document.querySelector('#view-settings').hidden"))
+    check("the footer hides with the main view", not E("document.querySelector('.panel-foot').checkVisibility()"))
+    E("document.querySelector('#btn-back').click()"); time.sleep(0.3)
+    check("back returns to the main view with the footer", E("document.querySelector('.panel-foot').checkVisibility()"))
+
     E("showSettings()"); time.sleep(0.3)
     check("the theme select lists auto / light / dark", E("[...document.querySelectorAll('#in-theme option')].map(o => o.value).join()") == "auto,light,dark")
     choose("#in-theme", "light")

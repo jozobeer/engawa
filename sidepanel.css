@@ -12,6 +12,7 @@
   --ok: #2ea043;
   --warn: #d29922;
   --radius: 12px;
+  --foot-h: 36px;
   /* アクセント色 (設定で選ぶ。appearance.js の ACCENTS)。白い文字を載せても読める濃さにする */
   --accent-indigo: #5b6cff;
   --accent-blue: #2a7de1;
@@ -83,6 +84,16 @@ code { font-size: 11px; background: var(--tile); padding: 1px 4px; border-radius
 
 .view { padding: 10px 10px 16px; }
 .view[hidden] { display: none; }
+/* 下端に残るフッタバーの分だけメイン画面の下を空ける */
+#view-main { padding-bottom: calc(16px + var(--foot-h)); }
+/* 全体への入口を置く細いバー。中身の上にかぶせるので、地色を透かしてぼかす */
+.panel-foot {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
+  display: flex; align-items: center; gap: 4px; height: var(--foot-h); padding: 0 10px;
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 70%, transparent);
+  backdrop-filter: blur(14px);
+}
 
 .section-head {
   display: flex; align-items: center; gap: 8px;
@@ -350,7 +361,8 @@ button.primary:disabled { opacity: .5; cursor: default; filter: none; }
 
 /* ---- トースト (短い通知) ---- */
 .toast {
-  position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%);
+  /* フッタバーの上に出す */
+  position: fixed; left: 50%; bottom: calc(14px + var(--foot-h)); transform: translateX(-50%);
   max-width: calc(100% - 28px); padding: 7px 12px; border-radius: 10px; font-size: 12px;
   background: var(--fg); color: var(--bg); box-shadow: 0 6px 20px rgba(0,0,0,.18);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none;
